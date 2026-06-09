@@ -1,0 +1,152 @@
+@page "/my/service-tickets"
+@using Client.Services.ServiceTickets
+@using PBL3.Shared.DTOs.ServiceTickets
+@using Client.Shared.Components.ServiceTickets
+@using MudBlazor
+@inject IServiceTicketClientService ServiceTicketService
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Phiếu sửa chữa của tôi - HushStore</PageTitle>
+
+@* ===== HEADER ===== *@
+<div style="background:var(--hs-white); border-bottom:1px solid var(--hs-border); padding:28px 0 20px;">
+    <div class="hs-container">
+        <h1 style="font-size:clamp(1.6rem,3vw,2.2rem); font-weight:800; color:var(--hs-dark);
+                   letter-spacing:-0.02em; text-transform:uppercase; margin:0 0 4px;">
+            Phiếu sửa chữa của tôi
+        </h1>
+        <p style="font-size:0.875rem; color:var(--hs-text-muted); margin:0;">
+            Theo dõi trạng thái sửa chữa của sản phẩm bạn
+        </p>
+    </div>
+</div>
+
+@* ===== FILTER BAR ===== *@
+<div style="background:var(--hs-white); border-bottom:1px solid var(--hs-border); padding:14px 0;">
+    <div class="hs-container" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+        <MudSelect T="byte?" @bind-Value="statusFilter"
+                   Label="Trạng thái" Variant="Variant.Outlined"
+                   Margin="Margin.Dense" Style="max-width:200px;">
+            <MudSelectItem T="byte?" Value="@null">Tất cả</MudSelectItem>
+            <MudSelectItem T="byte?" Value="0">Đã tiếp nhận</MudSelectItem>
+            <MudSelectItem T="byte?" Value="1">Đang chuẩn đoán</MudSelectItem>
+            <MudSelectItem T="byte?" Value="2">Đã gửi báo giá</MudSelectItem>
+            <MudSelectItem T="byte?" Value="5">Đang sửa chữa</MudSelectItem>
+            <MudSelectItem T="byte?" Value="9">Hoàn tất</MudSelectItem>
+        </MudSelect>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RefreshList"
+                   Style="font-weight:700; font-size:0.78rem; letter-spacing:0.05em;">
+            LỌC KẾT QUẢ
+        </MudButton>
+    </div>
+</div>
+
+@* ===== TABLE AREA ===== *@
+<div style="background:var(--hs-gray-bg); padding:32px 0 72px;">
+    <div class="hs-container">
+        <MudTable T="ServiceTicketListDto" ServerData="ServerReload"
+                  Dense="false" Hover="true" Bordered="false" Striped="false" Elevation="0"
+                  Style="border:1px solid var(--hs-border); border-radius:12px; overflow:hidden; background:var(--hs-white);"
+                  @ref="table">
+            <HeaderContent>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Mã phiếu</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Serial</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Sản phẩm</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Trạng thái</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Ngày tiếp nhận</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA; text-align:right;"></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Mã phiếu">
+                    <span style="font-family:monospace; font-weight:700; font-size:0.875rem; color:var(--hs-dark);">
+                        @context.TicketCode
+                    </span>
+                </MudTd>
+                <MudTd DataLabel="Serial">
+                    <span style="font-size:0.875rem; color:var(--hs-text-muted); font-family:monospace;">
+                        @context.SerialNumber
+                    </span>
+                </MudTd>
+                <MudTd DataLabel="Sản phẩm">
+                    <span style="font-size:0.875rem; font-weight:600; color:var(--hs-dark);">
+                        @context.ProductName
+                    </span>
+                </MudTd>
+                <MudTd DataLabel="Trạng thái">
+                    <ServiceTicketStatusChip Status="@context.Status" />
+                </MudTd>
+                <MudTd DataLabel="Ngày tiếp nhận">
+                    <span style="font-size:0.875rem; color:var(--hs-text);">
+                        @context.IntakeDate.ToLocalTime().ToString("dd/MM/yyyy")
+                    </span>
+                </MudTd>
+                <MudTd DataLabel="Hành động" Style="text-align:right;">
+                    <MudTooltip Text="Xem chi tiết">
+                        <MudIconButton Icon="@Icons.Material.Outlined.ArrowForward"
+                                       Size="Size.Small"
+                                       Style="color:var(--hs-red);"
+                                       OnClick="@(() => GoToDetail(context.Id))" />
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <div style="display:flex; flex-direction:column; align-items:center; padding:56px 0; text-align:center;">
+                    <MudIcon Icon="@Icons.Material.Outlined.BuildCircle"
+                             Style="font-size:3.5rem; color:#BDBDBD; margin-bottom:12px;" />
+                    <p style="font-size:0.875rem; color:var(--hs-text-muted); margin:0;">
+                        Bạn chưa có phiếu sửa chữa nào.
+                    </p>
+                </div>
+            </NoRecordsContent>
+            <LoadingContent>
+                <div style="padding:32px; text-align:center;">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Primary" />
+                </div>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] { 10, 20, 50 }" />
+            </PagerContent>
+        </MudTable>
+    </div>
+</div>
+
+@code {
+    private string? keyword;
+    private byte? statusFilter;
+    private MudTable<ServiceTicketListDto>? table;
+
+    private async Task<TableData<ServiceTicketListDto>> ServerReload(TableState state, CancellationToken token = default)
+    {
+        try
+        {
+            var result = await ServiceTicketService.GetMyTicketsAsync(keyword, statusFilter, state.Page + 1, state.PageSize, "IntakeDate", true);
+
+            if (!result.Success || result.Data?.Items == null)
+            {
+                Snackbar.Add("Lỗi tải danh sách phiếu.", Severity.Error);
+                return new TableData<ServiceTicketListDto> { Items = new List<ServiceTicketListDto>(), TotalItems = 0 };
+            }
+
+            return new TableData<ServiceTicketListDto>
+            {
+                Items = result.Data.Items,
+                TotalItems = result.Data.TotalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Lỗi: {ex.Message}", Severity.Error);
+            return new TableData<ServiceTicketListDto> { Items = new List<ServiceTicketListDto>(), TotalItems = 0 };
+        }
+    }
+
+    private async Task RefreshList()
+    {
+        if (table != null)
+            await table.ReloadServerData();
+    }
+
+    private void GoToDetail(int ticketId) => NavManager.NavigateTo($"/my/service-tickets/{ticketId}");
+}

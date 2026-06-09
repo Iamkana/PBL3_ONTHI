@@ -1,0 +1,92 @@
+<MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(StorefrontLayout)">
+                <Authorizing>
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Style="position:fixed;top:0;left:0;right:0;z-index:9999;" />
+                </Authorizing>
+                <NotAuthorized>
+                    @if (context.User.Identity?.IsAuthenticated == true)
+                    {
+                        <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-16">
+                            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Elevation="2">
+                                <MudText Typo="Typo.h6">Truy cập bị từ chối!</MudText>
+                                <MudText>Bạn không có quyền truy cập vào trang này.</MudText>
+                            </MudAlert>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/" Class="mt-2">
+                                Quay về trang chủ
+                            </MudButton>
+                        </MudContainer>
+                    }
+                    else
+                    {
+                        <Client.Auth.RedirectToLogin />
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    private bool _isDarkMode = false;
+
+    private MudTheme _theme = new MudTheme
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#E11D2A",
+            PrimaryDarken = "#B3121E",
+            PrimaryLighten = "#FF4D58",
+            Secondary = "#111111",
+            AppbarBackground = "#111111",
+            AppbarText = "#FFFFFF",
+            Background = "#FFFFFF",
+            Surface = "#FFFFFF",
+            DrawerBackground = "#FFFFFF",
+            DrawerText = "#333333",
+            TextPrimary = "#111111",
+            TextSecondary = "#6B7280",
+            ActionDefault = "#757575",
+            ActionDisabled = "#BDBDBD",
+            Divider = "#E5E5E5",
+            Success = "#43A047",
+            Warning = "#FB8C00",
+            Error = "#E53935",
+            Info = "#1E88E5",
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = ["Inter", "Roboto", "Helvetica", "Arial", "sans-serif"],
+                FontSize = "0.875rem",
+            },
+            H5 = new H5Typography
+            {
+                FontWeight = "700",
+                FontSize = "1.4rem",
+            },
+            H4 = new H4Typography
+            {
+                FontWeight = "700",
+                FontSize = "1.65rem",
+            },
+            H6 = new H6Typography
+            {
+                FontWeight = "600",
+                FontSize = "1.1rem",
+            },
+        },
+        LayoutProperties = new LayoutProperties
+        {
+            DrawerWidthLeft = "260px",
+        }
+    };
+}

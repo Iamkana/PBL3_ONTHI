@@ -1,0 +1,352 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.VerifyReferenceTrimCompatibility = 
+build_property.VerifyReferenceAotCompatibility = 
+build_property.MudDebugAnalyzer = 
+build_property.MudAllowedAttributePattern = 
+build_property.MudAllowedAttributeList = 
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = Client
+build_property.RootNamespace = Client
+build_property.ProjectDir = E:\PBL3\src\Client\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = E:\PBL3\src\Client
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[E:/PBL3/src/Client/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Auth/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = QXV0aFxSZWRpcmVjdFRvTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Layout/AdminLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEFkbWluTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Layout/AdminNavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEFkbWluTmF2TWVudS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Layout/EmployeeLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEVtcGxveWVlTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Layout/EmployeeNavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEVtcGxveWVlTmF2TWVudS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Layout/LoginLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XExvZ2luTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Layout/StorefrontLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XFN0b3JlZnJvbnRMYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Customers/CustomerDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQ3VzdG9tZXJzXEN1c3RvbWVyRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Customers/Detail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQ3VzdG9tZXJzXERldGFpbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Customers/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQ3VzdG9tZXJzXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Manufacturers/ManufacturerDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cTWFudWZhY3R1cmVyc1xNYW51ZmFjdHVyZXJEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Manufacturers/ManufacturerList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cTWFudWZhY3R1cmVyc1xNYW51ZmFjdHVyZXJMaXN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Products/ProductForm.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdHNcUHJvZHVjdEZvcm0ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Products/ProductList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdHNcUHJvZHVjdExpc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Reports/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUmVwb3J0c1xJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Suppliers/SupplierDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cU3VwcGxpZXJzXFN1cHBsaWVyRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Suppliers/SupplierList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cU3VwcGxpZXJzXFN1cHBsaWVyTGlzdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Vouchers/VoucherForm.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cVm91Y2hlcnNcVm91Y2hlckZvcm0ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/Vouchers/VoucherList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cVm91Y2hlcnNcVm91Y2hlckxpc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Admin/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cX0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Auth/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXV0aFxMb2dpbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Auth/Register.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXV0aFxSZWdpc3Rlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Categories/Categories.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2F0ZWdvcmllc1xDYXRlZ29yaWVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Categories/CategoryDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2F0ZWdvcmllc1xDYXRlZ29yeURpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Categories/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2F0ZWdvcmllc1xfSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Inventory/Components/ProductSerialDetailDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52ZW50b3J5XENvbXBvbmVudHNcUHJvZHVjdFNlcmlhbERldGFpbERpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Inventory/Components/UpdateSerialStatusDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52ZW50b3J5XENvbXBvbmVudHNcVXBkYXRlU2VyaWFsU3RhdHVzRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Inventory/ExportOrder.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52ZW50b3J5XEV4cG9ydE9yZGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Inventory/PendingExportOrders.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52ZW50b3J5XFBlbmRpbmdFeHBvcnRPcmRlcnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Inventory/ProductSerials.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52ZW50b3J5XFByb2R1Y3RTZXJpYWxzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Inventory/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52ZW50b3J5XF9JbXBvcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/NotFound.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTm90Rm91bmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Orders/Components/CancelOrderDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJzXENvbXBvbmVudHNcQ2FuY2VsT3JkZXJEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Orders/OrderDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJzXE9yZGVyRGV0YWlsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Orders/OrderList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJzXE9yZGVyTGlzdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Orders/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJzXF9JbXBvcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Pos/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUG9zXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Pos/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUG9zXF9JbXBvcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/AssignTicketDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xBc3NpZ25UaWNrZXREaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/CancelTicketDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xDYW5jZWxUaWNrZXREaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/ChooseBranchDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xDaG9vc2VCcmFuY2hEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/CompleteTicketDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xDb21wbGV0ZVRpY2tldERpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/CreateRmaDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xDcmVhdGVSbWFEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/IssueServiceInvoiceDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xJc3N1ZVNlcnZpY2VJbnZvaWNlRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/MarkWaitingPartsDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xNYXJrV2FpdGluZ1BhcnRzRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/RecordDiagnosisDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xSZWNvcmREaWFnbm9zaXNEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/RejectQuotationDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xSZWplY3RRdW90YXRpb25EaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/SwapSerialPickerDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xTd2FwU2VyaWFsUGlja2VyRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/Components/UpdateRmaResolutionDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcQ29tcG9uZW50c1xVcGRhdGVSbWFSZXNvbHV0aW9uRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/ServiceInvoiceDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcU2VydmljZUludm9pY2VEZXRhaWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/ServiceInvoiceList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcU2VydmljZUludm9pY2VMaXN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/ServiceTicketDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcU2VydmljZVRpY2tldERldGFpbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/ServiceTicketIntake.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcU2VydmljZVRpY2tldEludGFrZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/ServiceTicketList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcU2VydmljZVRpY2tldExpc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/ServiceTicketQuotation.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcU2VydmljZVRpY2tldFF1b3RhdGlvbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/ServiceTickets/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZVRpY2tldHNcX0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/AddAddressDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxBZGRBZGRyZXNzRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/BuildPc.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxCdWlsZFBjLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/Cart.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxDYXJ0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/CategoryProducts.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxDYXRlZ29yeVByb2R1Y3RzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/Checkout.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxDaGVja291dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/ComponentPickerDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxDb21wb25lbnRQaWNrZXJEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/MyOrders.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxNeU9yZGVycy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/MyServiceTicketDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxNeVNlcnZpY2VUaWNrZXREZXRhaWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/MyServiceTickets.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxNeVNlcnZpY2VUaWNrZXRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/OrderSuccess.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxPcmRlclN1Y2Nlc3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/ProductDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxQcm9kdWN0RGV0YWlsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/Profile.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxQcm9maWxlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/SearchResults.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxTZWFyY2hSZXN1bHRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/VoucherPickerDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxWb3VjaGVyUGlja2VyRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Storefront/WriteReviewDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVmcm9udFxXcml0ZVJldmlld0RpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Warehouse/ImportReceiptPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2FyZWhvdXNlXEltcG9ydFJlY2VpcHRQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Pages/Warehouse/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2FyZWhvdXNlXF9JbXBvcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Shared/Components/ServiceTickets/ServiceTicketStatusChip.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENvbXBvbmVudHNcU2VydmljZVRpY2tldHNcU2VydmljZVRpY2tldFN0YXR1c0NoaXAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Shared/Components/Storefront/ProductCard.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENvbXBvbmVudHNcU3RvcmVmcm9udFxQcm9kdWN0Q2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Shared/Components/Storefront/ReviewSection.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENvbXBvbmVudHNcU3RvcmVmcm9udFxSZXZpZXdTZWN0aW9uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/Shared/Components/UserProfileDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENvbXBvbmVudHNcVXNlclByb2ZpbGVEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/PBL3/src/Client/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 

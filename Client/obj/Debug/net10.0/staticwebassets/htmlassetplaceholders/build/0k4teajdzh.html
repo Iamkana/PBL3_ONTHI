@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HushStore - Quản trị</title>
+    <base href="/" />
+    <link rel="icon" type="image/png" href="images/favicon2.png" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- MudBlazor -->
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+
+    <link href="_framework/dotnet.zhhoyn36pr.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-acPqJywbvaPIvuhdVZcf8TDHlyacVqdYSjJJHvX2n5U=" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/storefront.css" />
+    <script type="importmap">{
+  "imports": {
+    "./_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js": "./_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.99zm1jdh75.lib.module.js",
+    "./_content/MudBlazor/MudBlazor.min.js": "./_content/MudBlazor/MudBlazor.min.f96y5mhlyw.js",
+    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.66stpp682q.js",
+    "./_framework/dotnet.native.js": "./_framework/dotnet.native.mx9wzm9o5h.js",
+    "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.2zl32tp6ah.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.zhhoyn36pr.js"
+  },
+  "scopes": {},
+  "integrity": {
+    "./_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.99zm1jdh75.lib.module.js": "sha256-A8e6zZwhOqf7lDQqbbCYcAUv4wGE9aQxOo4WyYxR//0=",
+    "./_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js": "sha256-A8e6zZwhOqf7lDQqbbCYcAUv4wGE9aQxOo4WyYxR//0=",
+    "./_content/MudBlazor/MudBlazor.min.f96y5mhlyw.js": "sha256-zR6goaoMpR/YVMMSTfCmVNo3kuPgOkjF/ovhkUhAkbk=",
+    "./_content/MudBlazor/MudBlazor.min.js": "sha256-zR6goaoMpR/YVMMSTfCmVNo3kuPgOkjF/ovhkUhAkbk=",
+    "./_framework/blazor.webassembly.66stpp682q.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
+    "./_framework/blazor.webassembly.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
+    "./_framework/dotnet.js": "sha256-acPqJywbvaPIvuhdVZcf8TDHlyacVqdYSjJJHvX2n5U=",
+    "./_framework/dotnet.native.js": "sha256-tlrn00yvndmJzhFdKpELUlytdgWFyGFdTWjI10bgILU=",
+    "./_framework/dotnet.native.mx9wzm9o5h.js": "sha256-tlrn00yvndmJzhFdKpELUlytdgWFyGFdTWjI10bgILU=",
+    "./_framework/dotnet.runtime.2zl32tp6ah.js": "sha256-/ndm/PF1BeBT5mXzYAES79wNK5sIZIQKAGcUqPL9ZP8=",
+    "./_framework/dotnet.runtime.js": "sha256-/ndm/PF1BeBT5mXzYAES79wNK5sIZIQKAGcUqPL9ZP8=",
+    "./_framework/dotnet.zhhoyn36pr.js": "sha256-acPqJywbvaPIvuhdVZcf8TDHlyacVqdYSjJJHvX2n5U="
+  }
+}</script>
+</head>
+
+<body>
+    <div id="app">
+        <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;">
+            <svg class="loading-progress">
+                <circle r="40%" cx="50%" cy="50%" />
+                <circle r="40%" cx="50%" cy="50%" />
+            </svg>
+            <div class="loading-progress-text"></div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Đã xảy ra lỗi không mong muốn.
+        <a href="." class="reload">Tải lại</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_framework/blazor.webassembly.66stpp682q.js"></script>
+    <script>
+        window.downloadFile = function (filename, contentType, base64Data) {
+            const link = document.createElement('a');
+            link.href = `data:${contentType};base64,${base64Data}`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+    </script>
+</body>
+
+</html>

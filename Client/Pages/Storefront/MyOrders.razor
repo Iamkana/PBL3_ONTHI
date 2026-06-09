@@ -1,0 +1,173 @@
+@page "/my/orders"
+@attribute [Authorize(Roles = "Customer")]
+@using Client.Services.Orders
+@using PBL3.Shared.DTOs.Sale
+@using MudBlazor
+@inject IOrderClientService OrderService
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Đơn hàng của tôi - HushStore</PageTitle>
+
+@* ===== HEADER ===== *@
+<div style="background:var(--hs-white); border-bottom:1px solid var(--hs-border); padding:28px 0 20px;">
+    <div class="hs-container">
+        <h1 style="font-size:clamp(1.6rem,3vw,2.2rem); font-weight:800; color:var(--hs-dark);
+                   letter-spacing:-0.02em; text-transform:uppercase; margin:0 0 4px;">
+            Đơn hàng của tôi
+        </h1>
+        <p style="font-size:0.875rem; color:var(--hs-text-muted); margin:0;">
+            Theo dõi trạng thái các đơn hàng của bạn
+        </p>
+    </div>
+</div>
+
+@* ===== FILTER BAR ===== *@
+<div style="background:var(--hs-white); border-bottom:1px solid var(--hs-border); padding:14px 0;">
+    <div class="hs-container" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+        <MudSelect T="int?" @bind-Value="_statusFilter"
+                   Label="Trạng thái" Variant="Variant.Outlined"
+                   Margin="Margin.Dense" Style="max-width:200px;">
+            <MudSelectItem T="int?" Value="@null">Tất cả</MudSelectItem>
+            <MudSelectItem T="int?" Value="0">Chờ duyệt</MudSelectItem>
+            <MudSelectItem T="int?" Value="1">Chờ xuất kho</MudSelectItem>
+            <MudSelectItem T="int?" Value="2">Đã xuất kho</MudSelectItem>
+            <MudSelectItem T="int?" Value="3">Thành công</MudSelectItem>
+            <MudSelectItem T="int?" Value="4">Đã hủy</MudSelectItem>
+        </MudSelect>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RefreshList"
+                   Style="font-weight:700; font-size:0.78rem; letter-spacing:0.05em;">
+            LỌC KẾT QUẢ
+        </MudButton>
+    </div>
+</div>
+
+@* ===== TABLE AREA ===== *@
+<div style="background:var(--hs-gray-bg); padding:32px 0 72px;">
+    <div class="hs-container">
+        <MudTable T="OrderSummaryResponse" ServerData="ServerReload"
+                  Dense="false" Hover="true" Bordered="false" Striped="false" Elevation="0"
+                  Style="border:1px solid var(--hs-border); border-radius:12px; overflow:hidden; background:var(--hs-white);"
+                  @ref="_table"
+                  OnRowClick="OnRowClick" RowStyle="cursor:pointer;">
+            <HeaderContent>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Mã đơn</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Ngày đặt</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Tổng tiền</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Trạng thái</MudTh>
+                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Thanh toán</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Mã đơn">
+                    <span style="font-family:monospace; font-weight:700; font-size:0.875rem; color:var(--hs-dark);">
+                        @context.OrderCode
+                    </span>
+                </MudTd>
+                <MudTd DataLabel="Ngày đặt">
+                    <span style="font-size:0.875rem; color:var(--hs-text);">
+                        @context.CreatedDate.ToLocalTime().ToString("dd/MM/yyyy")
+                    </span>
+                </MudTd>
+                <MudTd DataLabel="Tổng tiền">
+                    <span style="font-size:0.875rem; font-weight:700; color:var(--hs-red);">
+                        @context.TotalAmount.ToString("N0") đ
+                    </span>
+                </MudTd>
+                <MudTd DataLabel="Trạng thái">
+                    @{
+                        var (statusText, statusColor) = GetOrderStatus(context.Status);
+                    }
+                    <MudChip T="string" Color="@statusColor" Size="Size.Small" Variant="Variant.Filled">@statusText</MudChip>
+                </MudTd>
+                <MudTd DataLabel="Thanh toán">
+                    <span style="font-size:0.875rem; color:var(--hs-text-muted);">
+                        @GetPaymentStatus(context.PaymentStatus)
+                    </span>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <div style="display:flex; flex-direction:column; align-items:center; padding:56px 0; text-align:center;">
+                    <MudIcon Icon="@Icons.Material.Outlined.ReceiptLong"
+                             Style="font-size:3.5rem; color:#BDBDBD; margin-bottom:12px;" />
+                    <p style="font-size:0.875rem; color:var(--hs-text-muted); margin:0;">
+                        Bạn chưa có đơn hàng nào.
+                    </p>
+                </div>
+            </NoRecordsContent>
+            <LoadingContent>
+                <div style="padding:32px; text-align:center;">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Primary" />
+                </div>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] { 10, 20, 50 }" />
+            </PagerContent>
+        </MudTable>
+    </div>
+</div>
+
+@code {
+    private int? _statusFilter;
+    private MudTable<OrderSummaryResponse>? _table;
+
+    private async Task<TableData<OrderSummaryResponse>> ServerReload(TableState state, CancellationToken token = default)
+    {
+        try
+        {
+            var request = new OrderFilterRequest
+            {
+                PageIndex = state.Page + 1,
+                PageSize = state.PageSize,
+                Status = _statusFilter
+            };
+
+            var result = await OrderService.GetMyOrdersAsync(request);
+
+            if (!result.Success || result.Data?.Items == null)
+            {
+                Snackbar.Add("Lỗi tải danh sách đơn hàng.", Severity.Error);
+                return new TableData<OrderSummaryResponse> { Items = new List<OrderSummaryResponse>(), TotalItems = 0 };
+            }
+
+            return new TableData<OrderSummaryResponse>
+            {
+                Items = result.Data.Items,
+                TotalItems = result.Data.TotalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Lỗi: {ex.Message}", Severity.Error);
+            return new TableData<OrderSummaryResponse> { Items = new List<OrderSummaryResponse>(), TotalItems = 0 };
+        }
+    }
+
+    private async Task RefreshList()
+    {
+        if (_table != null)
+            await _table.ReloadServerData();
+    }
+
+    private void OnRowClick(TableRowClickEventArgs<OrderSummaryResponse> args)
+    {
+        if (args?.Item != null)
+            NavManager.NavigateTo($"/my/orders/{args.Item.Id}");
+    }
+
+    private static (string text, Color color) GetOrderStatus(int status) => status switch
+    {
+        0 => ("Chờ duyệt", Color.Warning),
+        1 => ("Chờ xuất kho", Color.Info),
+        2 => ("Đã xuất kho", Color.Success),
+        3 => ("Thành công", Color.Success),
+        4 => ("Đã hủy", Color.Error),
+        _ => ("Không xác định", Color.Default)
+    };
+
+    private static string GetPaymentStatus(int status) => status switch
+    {
+        0 => "Chưa thanh toán",
+        1 => "Đã thanh toán",
+        _ => "Không xác định"
+    };
+}

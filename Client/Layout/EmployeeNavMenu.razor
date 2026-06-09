@@ -1,0 +1,73 @@
+<MudNavMenu Bordered="true" Color="Color.Primary" Class="px-2">
+<AuthorizeView Roles="Employee,Admin">
+    <MudText Typo="Typo.caption" Class="px-4 py-2 mud-text-secondary"
+             Style="text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">
+        Bán hàng & Đơn hàng
+    </MudText>
+
+    <MudNavLink Href="/pos" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Outlined.PointOfSale"
+                IconColor="Color.Primary">
+        Bán hàng (POS)
+    </MudNavLink>
+
+    <MudNavLink Href="/orders" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Outlined.ShoppingCart"
+                IconColor="Color.Default">
+        Đơn hàng
+    </MudNavLink>
+
+    <MudText Typo="Typo.caption" Class="px-4 py-2 mt-3 mud-text-secondary"
+             Style="text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">
+        Quản lý kho
+    </MudText>
+
+    <MudNavLink Href="/warehouse/import-receipts" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Outlined.MoveToInbox"
+                IconColor="Color.Default">
+        Nhập kho
+    </MudNavLink>
+
+    <MudNavLink Href="/inventory/export" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Outlined.Outbox"
+                IconColor="Color.Default">
+        Xuất kho
+    </MudNavLink>
+
+    <MudNavLink Href="/inventory/serials" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Outlined.Inventory2"
+                IconColor="Color.Default">
+        Quản lý Serial
+    </MudNavLink>
+
+    <MudNavLink Href="/inventory/audit" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Outlined.FactCheck"
+                IconColor="Color.Default">
+        Kiểm kê kho hàng
+    </MudNavLink>
+
+
+    <MudText Typo="Typo.caption" Class="px-4 py-2 mt-3 mud-text-secondary"
+             Style="text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">
+        Dịch vụ & Bảo hành
+    </MudText>
+
+    <MudNavLink Href="/service-tickets" Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Outlined.Build"
+                IconColor="Color.Default">
+        Phiếu sửa chữa
+    </MudNavLink>
+
+    <MudNavLink Href="/service-tickets/intake" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Outlined.PersonAdd"
+                IconColor="Color.Default">
+        Tiếp nhận sản phẩm
+    </MudNavLink>
+
+    <MudNavLink Href="/service-invoices" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Outlined.Receipt"
+                IconColor="Color.Default">
+        Hóa đơn dịch vụ
+    </MudNavLink>
+</AuthorizeView>
+</MudNavMenu>

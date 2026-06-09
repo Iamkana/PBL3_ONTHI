@@ -1,0 +1,125 @@
+@page "/login"
+@layout LoginLayout
+@inject IAuthClientService AuthService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Đăng nhập - HushStore</PageTitle>
+
+<div style="width: 100%; max-width: 400px;">
+
+    @* Logo chỉ hiện trên mobile khi left panel bị ẩn *@
+    <div class="d-flex d-md-none justify-center mb-6">
+        <MudImage Src="images/logo.png" Alt="HushStore" Height="48" ObjectFit="ObjectFit.Contain" />
+    </div>
+
+    <MudText Typo="Typo.h5" Class="mb-1" Style="font-weight: 700; color: #111111;">Đăng nhập</MudText>
+    <MudText Typo="Typo.body2" Class="mb-6" Style="color: #888888;">Chào mừng bạn trở lại HushStore</MudText>
+
+    <EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin">
+        <FluentValidationValidator />
+
+        <MudTextField T="string" Label="Email" @bind-Value="_loginRequest.Email"
+                      For="@(() => _loginRequest.Email)"
+                      Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+
+        <MudTextField T="string" Label="Mật khẩu" @bind-Value="_loginRequest.Password"
+                      For="@(() => _loginRequest.Password)"
+                      InputType="InputType.Password"
+                      Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-6" />
+
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                   Size="Size.Large" FullWidth="true" Disabled="@_isLoading"
+                   Style="border-radius: 8px; font-weight: 600; letter-spacing: 0.03em;">
+            @if (_isLoading)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Đang xử lý...</MudText>
+            }
+            else
+            {
+                <MudText>Đăng nhập</MudText>
+            }
+        </MudButton>
+    </EditForm>
+
+    <div class="d-flex align-center mt-5 mb-1" style="gap: 10px;">
+        <div style="flex: 1; height: 1px; background: #ebebeb;"></div>
+        <MudText Typo="Typo.caption" Style="color: #bbb;">hoặc</MudText>
+        <div style="flex: 1; height: 1px; background: #ebebeb;"></div>
+    </div>
+
+    <div class="d-flex justify-center mt-3">
+        <MudText Typo="Typo.body2" Style="color: #888888;">Chưa có tài khoản?</MudText>
+        <MudLink Href="/register" Class="ml-1" Color="Color.Primary" Underline="Underline.Always">
+            Đăng ký ngay
+        </MudLink>
+    </div>
+
+</div>
+
+@code {
+    private LoginRequest _loginRequest = new();
+    private bool _isLoading = false;
+
+    protected override void OnInitialized()
+    {
+        var query = new Uri(Navigation.Uri).Query;
+        if (query.Contains("locked=true"))
+        {
+            var message = ExtractQueryParam(query, "reason");
+            Snackbar.Add(
+                string.IsNullOrEmpty(message) ? "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên." : Uri.UnescapeDataString(message),
+                Severity.Error);
+        }
+        else if (query.Contains("expired=true"))
+        {
+            Snackbar.Add("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", Severity.Warning);
+        }
+    }
+
+    private static string? ExtractQueryParam(string query, string key)
+    {
+        foreach (var part in query.TrimStart('?').Split('&'))
+        {
+            var idx = part.IndexOf('=');
+            if (idx >= 0 && part[..idx] == key) return part[(idx + 1)..];
+        }
+        return null;
+    }
+
+    private async Task HandleLogin()
+    {
+        _isLoading = true;
+
+        var result = await AuthService.LoginAsync(_loginRequest);
+
+        if (result.Success)
+        {
+            Snackbar.Add("Đăng nhập thành công!", Severity.Success);
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.IsInRole("Admin"))
+            {
+                Navigation.NavigateTo("/admin/reports");
+            }
+            else if (user.IsInRole("Employee"))
+            {
+                Navigation.NavigateTo("/pos");
+            }
+            else
+            {
+                Navigation.NavigateTo("/");
+            }
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Đăng nhập thất bại.", Severity.Error);
+        }
+
+        _isLoading = false;
+    }
+}

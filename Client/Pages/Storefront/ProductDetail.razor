@@ -1,0 +1,508 @@
+@page "/product/{slug}"
+@layout StorefrontLayout
+@using PBL3.Shared.DTOs.Storefront
+@using Client.Services.Storefront
+@using Client.Services.Cart
+@using Client.Services.Comparison
+@using Client.Shared.Components.Storefront
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IStorefrontClientService StorefrontClientService
+@inject ICartClientService CartClientService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IComparisonService ComparisonService
+
+<PageTitle>@(_product?.Name ?? "Chi tiết sản phẩm") - HushStore</PageTitle>
+
+@* ===== LOADING STATE ===== *@
+@if (_isLoading)
+{
+    <div style="background:var(--hs-white); padding:48px 0;">
+        <div class="hs-container">
+            <MudGrid Spacing="6">
+                <MudItem xs="12" md="5">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="480px" Style="border-radius:12px;" />
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="80px" Height="80px" Style="border-radius:8px; flex-shrink:0;" />
+                        }
+                    </div>
+                </MudItem>
+                <MudItem xs="12" md="7">
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="35%" Height="20px" Style="margin-bottom:12px;" />
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="85%" Height="44px" Style="margin-bottom:8px;" />
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="60%" Height="44px" Style="margin-bottom:24px;" />
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="40%" Height="60px" Style="margin-bottom:24px;" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="52px" Style="border-radius:8px; margin-bottom:16px;" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="52px" Style="border-radius:8px;" />
+                </MudItem>
+            </MudGrid>
+        </div>
+    </div>
+}
+else if (_product == null)
+{
+    @* ===== NOT FOUND ===== *@
+    <div style="background:var(--hs-white); padding:120px 0; text-align:center;">
+        <MudIcon Icon="@Icons.Material.Outlined.SearchOff"
+                 Style="font-size:5rem; color:#BDBDBD; margin-bottom:16px;" />
+        <h3 style="font-size:1.4rem; font-weight:800; color:var(--hs-dark); margin:0 0 8px;">
+            Không tìm thấy sản phẩm
+        </h3>
+        <p style="color:var(--hs-text-muted); margin-bottom:28px;">
+            Sản phẩm này không tồn tại hoặc đã bị xóa.
+        </p>
+        <a href="/" class="hs-btn hs-btn--primary">Về trang chủ</a>
+    </div>
+}
+else
+{
+    @* ===== MAIN PRODUCT SECTION ===== *@
+    <div style="background:var(--hs-white); padding:40px 0 56px;">
+        <div class="hs-container">
+            <MudGrid Spacing="6">
+
+                @* LEFT: Gallery *@
+                <MudItem xs="12" md="5">
+                    <div style="border:1px solid var(--hs-border); border-radius:12px; overflow:hidden;
+                                display:flex; align-items:center; justify-content:center;
+                                height:480px; background:#FAFAFA; padding:24px;">
+                        @if (!string.IsNullOrEmpty(_mainImage))
+                        {
+                            <img src="@_mainImage" alt="@_product.Name"
+                                 style="max-height:100%; max-width:100%; object-fit:contain;" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported"
+                                     Style="font-size:5rem; color:#BDBDBD;" />
+                        }
+                    </div>
+                    @if (_product.Images.Count > 1)
+                    {
+                        <div style="display:flex; gap:8px; margin-top:12px; overflow-x:auto; padding-bottom:4px;">
+                            @foreach (var img in _product.Images)
+                            {
+                                var isSelected = _mainImage == img;
+                                <div @onclick="@(() => ChangeMainImage(img))"
+                                     style="flex-shrink:0; width:80px; height:80px; border-radius:8px; overflow:hidden; cursor:pointer;
+                                            border:2px solid @(isSelected ? "var(--hs-red)" : "var(--hs-border)");
+                                            display:flex; align-items:center; justify-content:center; background:#FAFAFA; padding:4px;">
+                                    <img src="@img" alt="Thumbnail"
+                                         style="max-height:100%; max-width:100%; object-fit:contain;" />
+                                </div>
+                            }
+                        </div>
+                    }
+                </MudItem>
+
+                @* RIGHT: Info + Order *@
+                <MudItem xs="12" md="7">
+
+                    @* Eyebrow: brand *@
+                    @if (!string.IsNullOrEmpty(_product.ManufacturerName))
+                    {
+                        <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+                                    text-transform:uppercase; color:var(--hs-text-muted); margin-bottom:10px;">
+                            @_product.ManufacturerName
+                        </div>
+                    }
+
+                    @* Product name *@
+                    <h1 style="font-size:clamp(1.4rem,2.5vw,2rem); font-weight:800; color:var(--hs-dark);
+                               letter-spacing:-0.02em; line-height:1.2; margin:0 0 12px;">
+                        @_product.Name
+                    </h1>
+
+                    @* Rating + Compare row *@
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:6px; pointer-events:none;">
+                            <MudRating SelectedValue="(int)_product.Rating" ReadOnly="true" Size="Size.Small" />
+                            <span style="font-size:0.8rem; color:var(--hs-text-muted);">(@_product.ReviewCount đánh giá)</span>
+                        </div>
+                        <div style="width:1px; height:16px; background:var(--hs-border);"></div>
+                        <MudTooltip Text="@(ComparisonService.Contains(_product!.Id) ? "Bỏ khỏi so sánh" : "Thêm vào so sánh")">
+                            <MudButton Variant="@(ComparisonService.Contains(_product!.Id) ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Primary" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.CompareArrows"
+                                       OnClick="HandleCompareClick"
+                                       Style="border-radius:100px; font-size:0.75rem; font-weight:700; letter-spacing:0.04em;">
+                                SO SÁNH
+                            </MudButton>
+                        </MudTooltip>
+                    </div>
+
+                    @* Divider *@
+                    <div style="height:1px; background:var(--hs-border); margin-bottom:24px;"></div>
+
+                    @* Price block *@
+                    @if (_currentVariant != null)
+                    {
+                        <div style="margin-bottom:20px;">
+                            @if (_currentVariant.OriginalPrice.HasValue)
+                            {
+                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                                    <span style="font-size:1rem; color:var(--hs-text-muted); text-decoration:line-through;">
+                                        @_currentVariant.OriginalPrice.Value.ToString("N0") ₫
+                                    </span>
+                                    <span style="background:rgba(225,29,42,0.12); color:var(--hs-red);
+                                                 font-size:0.72rem; font-weight:700; letter-spacing:0.04em;
+                                                 padding:3px 10px; border-radius:100px; text-transform:uppercase;">
+                                        -@((int)Math.Round((1 - _currentVariant.Price / _currentVariant.OriginalPrice.Value) * 100))%
+                                    </span>
+                                </div>
+                            }
+                            <div style="font-size:clamp(2rem,3vw,2.6rem); font-weight:800; color:var(--hs-red); line-height:1;">
+                                @_currentVariant.Price.ToString("N0") ₫
+                            </div>
+                        </div>
+
+                        @* Stock badge *@
+                        <div style="margin-bottom:24px;">
+                            @if (!_currentVariant.IsAvailable)
+                            {
+                                <span style="display:inline-block; background:#FEE2E2; color:#DC2626;
+                                             font-size:0.75rem; font-weight:700; padding:4px 14px; border-radius:100px;">
+                                    Hết hàng
+                                </span>
+                            }
+                            else if (_currentVariant.StockQuantity <= 5)
+                            {
+                                <span style="display:inline-block; background:#FEF3C7; color:#D97706;
+                                             font-size:0.75rem; font-weight:700; padding:4px 14px; border-radius:100px;">
+                                    Chỉ còn @_currentVariant.StockQuantity sản phẩm
+                                </span>
+                            }
+                            else
+                            {
+                                <span style="display:inline-block; background:#DCFCE7; color:#16A34A;
+                                             font-size:0.75rem; font-weight:700; padding:4px 14px; border-radius:100px;">
+                                    Còn hàng
+                                </span>
+                            }
+                        </div>
+                    }
+
+                    @* Variants *@
+                    @if (_product.Variants.Any())
+                    {
+                        <div style="margin-bottom:24px;">
+                            <div style="font-size:0.8rem; font-weight:700; letter-spacing:0.06em;
+                                        text-transform:uppercase; color:var(--hs-text-muted); margin-bottom:10px;">
+                                Phiên bản
+                            </div>
+                            <MudChipSet T="StorefrontVariantResponse" SelectedValue="_currentVariant"
+                                        SelectedValueChanged="OnVariantChanged"
+                                        SelectionMode="SelectionMode.SingleSelection"
+                                        Style="gap:8px; flex-wrap:wrap;">
+                                @foreach (var variant in _product.Variants)
+                                {
+                                    <MudChip T="StorefrontVariantResponse" Value="@variant"
+                                             Variant="Variant.Outlined" Color="Color.Primary"
+                                             Disabled="!variant.IsAvailable"
+                                             Style="@($"border-radius:8px; font-weight:600; font-size:0.8rem; {(variant.Id == _currentVariant?.Id ? "border:2px solid var(--hs-red); color:var(--hs-red);" : "")}")">
+                                        @variant.VariantName
+                                    </MudChip>
+                                }
+                            </MudChipSet>
+                        </div>
+                    }
+
+                    @* Quantity *@
+                    <div style="display:flex; align-items:center; gap:16px; margin-bottom:28px;">
+                        <span style="font-size:0.8rem; font-weight:700; letter-spacing:0.06em;
+                                     text-transform:uppercase; color:var(--hs-text-muted);">Số lượng</span>
+                        <MudNumericField @bind-Value="_quantity"
+                                         Min="1" Max="@(Math.Max(_currentVariant?.StockQuantity ?? 1, 1))"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense"
+                                         Style="width:100px;"
+                                         Disabled="!IsCurrentVariantAvailable()" />
+                    </div>
+
+                    @* Action buttons *@
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <button class="hs-btn" style="flex:1; min-width:160px;
+                                    border:2px solid var(--hs-dark); color:var(--hs-dark); background:transparent;
+                                    display:flex; align-items:center; justify-content:center; gap:8px;
+                                    @(!IsCurrentVariantAvailable() || _isProcessing ? "opacity:.45; cursor:not-allowed;" : "")"
+                                @onclick="AddToCartAsync"
+                                disabled="@(!IsCurrentVariantAvailable() || _isProcessing)">
+                            <MudIcon Icon="@Icons.Material.Filled.AddShoppingCart" Style="font-size:1.1rem;" />
+                            THÊM VÀO GIỎ
+                        </button>
+                        <button class="hs-btn hs-btn--primary" style="flex:1; min-width:160px;
+                                    @(!IsCurrentVariantAvailable() || _isProcessing ? "opacity:.45; cursor:not-allowed;" : "")"
+                                @onclick="BuyNowAsync"
+                                disabled="@(!IsCurrentVariantAvailable() || _isProcessing)">
+                            MUA NGAY
+                        </button>
+                    </div>
+
+                </MudItem>
+            </MudGrid>
+        </div>
+    </div>
+
+    @* ===== TABS: MÔ TẢ / THÔNG SỐ / ĐÁNH GIÁ ===== *@
+    <div style="background:var(--hs-gray-bg); padding:48px 0 56px;">
+        <div class="hs-container">
+            <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" PanelClass="pa-0 pt-6"
+                     Style="background:transparent;"
+                     TabHeaderClass="pd-tab-header">
+                <MudTabPanel Text="MÔ TẢ SẢN PHẨM" Icon="@Icons.Material.Filled.Description">
+                    <div style="background:var(--hs-white); border-radius:12px; padding:36px 40px;">
+                        @if (!string.IsNullOrWhiteSpace(_product.Description))
+                        {
+                            <div class="pd-description">
+                                @((MarkupString)_product.Description)
+                            </div>
+                        }
+                        else
+                        {
+                            <p style="color:var(--hs-text-muted); text-align:center; padding:40px 0; margin:0;">
+                                Chưa có thông tin mô tả cho sản phẩm này.
+                            </p>
+                        }
+                    </div>
+                </MudTabPanel>
+                <MudTabPanel Text="THÔNG SỐ KỸ THUẬT" Icon="@Icons.Material.Filled.Tune">
+                    <div style="background:var(--hs-white); border-radius:12px; overflow:hidden;">
+                        @if (_currentVariant != null && _currentVariant.Specifications.Any())
+                        {
+                            <MudTable Items="@_currentVariant.Specifications" Hover="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh Style="font-size:0.78rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--hs-text-muted);">Thông số</MudTh>
+                                    <MudTh Style="font-size:0.78rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--hs-text-muted);">Giá trị</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Thông số"
+                                           Style="width:35%; font-weight:700; font-size:0.875rem; color:var(--hs-dark); background:#FAFAFA;">
+                                        @context.Key
+                                    </MudTd>
+                                    <MudTd DataLabel="Giá trị" Style="font-size:0.875rem; color:var(--hs-text);">
+                                        @context.Value
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                        else
+                        {
+                            <p style="color:var(--hs-text-muted); text-align:center; padding:40px 0; margin:0;">
+                                Không có thông số kỹ thuật cho phiên bản này.
+                            </p>
+                        }
+                    </div>
+                </MudTabPanel>
+                <MudTabPanel Text="ĐÁNH GIÁ" Icon="@Icons.Material.Filled.StarRate">
+                    <div style="background:var(--hs-white); border-radius:12px; padding:36px 40px;">
+                        <ReviewSection ProductId="@_product.Id" />
+                    </div>
+                </MudTabPanel>
+            </MudTabs>
+        </div>
+    </div>
+
+    @* ===== RELATED PRODUCTS ===== *@
+    @if (_relatedProducts != null && _relatedProducts.Any())
+    {
+        <div style="background:var(--hs-white); padding:56px 0 72px;">
+            <div class="hs-container">
+                <h2 style="font-size:clamp(1.3rem,2.5vw,1.8rem); font-weight:800; color:var(--hs-dark);
+                           letter-spacing:-0.01em; text-transform:uppercase; margin:0 0 32px;">
+                    Sản phẩm tương tự
+                </h2>
+                <MudGrid Spacing="3">
+                    @foreach (var p in _relatedProducts)
+                    {
+                        <MudItem xs="6" sm="4" md="3">
+                            <ProductCard Product="p" />
+                        </MudItem>
+                    }
+                </MudGrid>
+            </div>
+        </div>
+    }
+}
+
+<style>
+    .pd-description {
+        font-family: 'Inter', 'Roboto', sans-serif;
+        color: var(--hs-text);
+        line-height: 1.8;
+        font-size: 1rem;
+    }
+    .pd-description p { margin-bottom: 1rem; }
+    .pd-description img {
+        max-width: 100%; height: auto;
+        border-radius: 8px; margin: 1rem 0; display: block;
+    }
+    .pd-description ul, .pd-description ol { margin-bottom: 1rem; padding-left: 2rem; }
+    .pd-description li { margin-bottom: 0.5rem; }
+    .pd-description h2, .pd-description h3, .pd-description h4 {
+        margin-top: 2rem; margin-bottom: 1rem;
+        font-weight: 700; color: var(--hs-dark);
+    }
+    .pd-tab-header .mud-tab { font-weight: 700; font-size: 0.82rem; letter-spacing: 0.05em; }
+</style>
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    private bool _isLoading = true;
+    private bool _isProcessing = false;
+    private ProductDetailResponse? _product;
+    private List<ProductCardResponse>? _relatedProducts;
+    private StorefrontVariantResponse? _currentVariant;
+    private string? _mainImage;
+    private int _quantity = 1;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+        _product = null;
+        _relatedProducts = null;
+        
+        var response = await StorefrontClientService.GetProductDetailAsync(Slug);
+        if (response.Success && response.Data != null)
+        {
+            _product = response.Data;
+            _mainImage = _product.Images.FirstOrDefault();
+            
+            // Set default variant (first available or just the first one)
+            _currentVariant = _product.Variants.FirstOrDefault(v => v.IsAvailable) ?? _product.Variants.FirstOrDefault();
+
+            // Load related products
+            var relatedResponse = await StorefrontClientService.GetRelatedProductsAsync(Slug);
+            if (relatedResponse.Success && relatedResponse.Data != null)
+            {
+                _relatedProducts = relatedResponse.Data;
+            }
+        }
+        else
+        {
+            Snackbar.Add(response.Message ?? "Không thể tải thông tin sản phẩm.", Severity.Error);
+        }
+
+        _isLoading = false;
+    }
+
+    private void ChangeMainImage(string url)
+    {
+        _mainImage = url;
+    }
+
+    private void OnVariantChanged(StorefrontVariantResponse variant)
+    {
+        if (variant == null) return;
+        _currentVariant = variant;
+        // In-memory UI update happens automatically due to bindings.
+    }
+
+    private bool IsCurrentVariantAvailable()
+    {
+        return _currentVariant?.IsAvailable == true;
+    }
+
+    private async Task AddToCartAsync()
+    {
+        if (_currentVariant == null || !_currentVariant.IsAvailable) return;
+
+        // Kiểm tra đăng nhập trước khi thêm giỏ
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            Snackbar.Add("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.", Severity.Warning);
+            NavigationManager.NavigateTo($"/login?returnUrl=/product/{Slug}");
+            return;
+        }
+
+        _isProcessing = true;
+        StateHasChanged();
+        var result = await CartClientService.AddToCartAsync(_currentVariant.Id, _quantity);
+        _isProcessing = false;
+        if (result.Success)
+        {
+            Snackbar.Add($"Đã thêm {_quantity} sản phẩm vào giỏ hàng!", Severity.Success);
+            // Reset số lượng về 1 để tiếp tục thêm
+            _quantity = 1;
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Lỗi khi thêm vào giỏ hàng.", Severity.Error);
+        }
+    }
+
+    private async Task BuyNowAsync()
+    {
+        if (_currentVariant == null || !_currentVariant.IsAvailable) return;
+
+        // Kiểm tra đăng nhập trước khi mua
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            Snackbar.Add("Vui lòng đăng nhập để tiếp tục mua hàng.", Severity.Warning);
+            NavigationManager.NavigateTo($"/login?returnUrl=/product/{Slug}");
+            return;
+        }
+
+        _isProcessing = true;
+        StateHasChanged();
+        var result = await CartClientService.AddToCartAsync(_currentVariant.Id, _quantity);
+        if (result.Success)
+        {
+            NavigationManager.NavigateTo("/cart");
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Lỗi khi thực hiện mua ngay.", Severity.Error);
+            _isProcessing = false;
+        }
+    }
+
+    private void NavigateToProduct(string slug)
+    {
+        NavigationManager.NavigateTo($"/product/{slug}");
+    }
+
+    private void HandleCompareClick()
+    {
+        if (_product == null) return;
+
+        if (ComparisonService.Contains(_product.Id))
+        {
+            ComparisonService.Remove(_product.Id);
+            return;
+        }
+
+        var card = new ProductCardResponse
+        {
+            Id = _product.Id,
+            Name = _product.Name,
+            Slug = _product.Slug,
+            ThumbnailUrl = _product.Images.FirstOrDefault(),
+            ManufacturerName = _product.ManufacturerName,
+            CurrentPrice = _currentVariant?.Price ?? 0,
+            OldPrice = _currentVariant?.OriginalPrice ?? _currentVariant?.Price ?? 0,
+            IsAvailable = _currentVariant?.IsAvailable ?? false,
+            Rating = _product.Rating,
+            ReviewCount = _product.ReviewCount,
+            CategoryId = _product.CategoryId
+        };
+
+        var result = ComparisonService.TryAdd(card);
+        if (!result.Success && result.ErrorMessage != null)
+            Snackbar.Add(result.ErrorMessage, Severity.Warning);
+        else if (result.Replaced)
+            Snackbar.Add($"Chỉ có thể so sánh sản phẩm cùng nhóm hàng. {result.OldCategoryName} đã được xoá khỏi giỏ so sánh.", Severity.Warning);
+        else if (result.Success)
+            Snackbar.Add($"Đã thêm \"{_product.Name}\" vào danh sách so sánh.", Severity.Success);
+    }
+}

@@ -1,0 +1,441 @@
+@page "/build-pc"
+@layout StorefrontLayout
+@using PBL3.Shared.DTOs.BuildPc
+@using Client.Services.BuildPc
+@using Client.Services.Cart
+@inject IBuildPcClientService BuildPcService
+@inject ICartClientService CartService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Xây dựng PC - HushStore</PageTitle>
+
+@* ===== HEADER ===== *@
+<div style="background:var(--hs-white); border-bottom:1px solid var(--hs-border); padding:28px 0 20px;">
+    <div class="hs-container">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+            <div>
+                <h1 style="font-size:clamp(1.6rem,3vw,2.2rem); font-weight:800; color:var(--hs-dark);
+                           letter-spacing:-0.02em; text-transform:uppercase; margin:0 0 4px;">
+                    Xây dựng cấu hình PC
+                </h1>
+                <p style="font-size:0.875rem; color:var(--hs-text-muted); margin:0;">
+                    Chọn từng linh kiện để xây dựng cấu hình theo ý bạn — @_slots.Count(s => s.SelectedItem != null)/@_slots.Count linh kiện đã chọn
+                </p>
+            </div>
+            <button class="hs-btn"
+                    style="border:2px solid var(--hs-border); color:var(--hs-dark); background:transparent;
+                           display:inline-flex; align-items:center; gap:6px;"
+                    @onclick="ResetAll">
+                <MudIcon Icon="@Icons.Material.Filled.Refresh" Style="font-size:1rem;" />
+                LÀM MỚI
+            </button>
+        </div>
+    </div>
+</div>
+
+@* ===== SLOT TABLE ===== *@
+<div style="background:var(--hs-gray-bg); padding:32px 0 120px;">
+    <div class="hs-container">
+
+        @* Column header (shows when ≥1 item selected) *@
+        @if (HasAnyItem)
+        {
+            <div style="display:flex; align-items:center; margin-bottom:6px; padding:0 16px 0 0;">
+                <div style="width:200px; flex-shrink:0;"></div>
+                <div style="flex:1; display:flex; align-items:center; padding-left:16px; gap:8px;">
+                    <div style="flex:1;">
+                        <span class="bpc-col-label">Sản phẩm</span>
+                    </div>
+                    <div class="bpc-col-qty"><span class="bpc-col-label">Số lượng</span></div>
+                    <div class="bpc-col-price"><span class="bpc-col-label">Đơn giá</span></div>
+                    <div class="bpc-col-total"><span class="bpc-col-label">Thành tiền</span></div>
+                    <div class="bpc-col-actions"></div>
+                </div>
+            </div>
+        }
+
+        @* Slots container *@
+        <div style="border:1px solid var(--hs-border); border-radius:12px; overflow:hidden; background:var(--hs-white);">
+            @foreach (var slot in _slots)
+            {
+                var isLast = slot == _slots.Last();
+                <div class="bpc-row" style="@(isLast ? "" : "border-bottom:1px solid var(--hs-border);")">
+
+                    @* Label column *@
+                    <div class="bpc-label-col">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:24px; height:24px; border-radius:50%; flex-shrink:0;
+                                        display:flex; align-items:center; justify-content:center;
+                                        font-size:0.68rem; font-weight:800;
+                                        background:@(slot.SelectedItem != null ? "var(--hs-red)" : "#E5E5E5");
+                                        color:@(slot.SelectedItem != null ? "#fff" : "var(--hs-text-muted)");">
+                                @slot.Index
+                            </div>
+                            <span style="font-size:0.82rem; font-weight:700; color:var(--hs-dark); line-height:1.2;">
+                                @slot.Name
+                            </span>
+                        </div>
+                    </div>
+
+                    @* Content column *@
+                    <div class="bpc-content-col">
+                        @if (slot.SelectedItem == null)
+                        {
+                            <button class="bpc-add-btn" @onclick="@(() => OpenPicker(slot))">
+                                <MudIcon Icon="@Icons.Material.Filled.Add" Style="font-size:0.95rem;" />
+                                Chọn @slot.Name
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="bpc-item-row">
+
+                                @* Thumbnail + info *@
+                                <div style="flex:1; display:flex; align-items:center; gap:12px; min-width:0;">
+                                    @if (!string.IsNullOrEmpty(slot.SelectedItem!.ImageUrl))
+                                    {
+                                        <div style="width:48px; height:48px; flex-shrink:0; padding:4px;
+                                                    border:1px solid var(--hs-border); border-radius:8px; background:#FAFAFA;
+                                                    display:flex; align-items:center; justify-content:center;">
+                                            <img src="@slot.SelectedItem!.ImageUrl"
+                                                 style="max-width:100%; max-height:100%; object-fit:contain;" />
+                                        </div>
+                                    }
+                                    <div style="min-width:0;">
+                                        <div style="font-size:0.875rem; font-weight:700; color:var(--hs-dark);
+                                                    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                            @slot.SelectedItem!.ProductName
+                                        </div>
+                                        <div style="font-size:0.75rem; color:var(--hs-text-muted);">
+                                            @slot.SelectedItem!.VariantName
+                                        </div>
+                                        @if (slot.SelectedItem!.WarrantyMonth > 0)
+                                        {
+                                            <div style="font-size:0.72rem; color:var(--hs-text-muted);">
+                                                BH: @slot.SelectedItem!.WarrantyMonth tháng
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                @* Quantity *@
+                                <div class="bpc-col-qty">
+                                    <MudNumericField T="int"
+                                                     Value="@slot.SelectedItem!.Quantity"
+                                                     ValueChanged="@(q => UpdateQuantity(slot, q))"
+                                                     Min="1" Max="10"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Style="width:72px;" />
+                                </div>
+
+                                @* Unit price *@
+                                <div class="bpc-col-price">
+                                    <span style="font-size:0.875rem; font-weight:600; color:var(--hs-dark); white-space:nowrap;">
+                                        @slot.SelectedItem!.UnitPrice.ToString("N0") đ
+                                    </span>
+                                </div>
+
+                                @* Row total *@
+                                <div class="bpc-col-total">
+                                    <span style="font-size:0.875rem; font-weight:800; color:var(--hs-red); white-space:nowrap;">
+                                        @((slot.SelectedItem!.UnitPrice * slot.SelectedItem!.Quantity).ToString("N0")) đ
+                                    </span>
+                                </div>
+
+                                @* Actions *@
+                                <div class="bpc-col-actions">
+                                    <MudTooltip Text="Thay đổi linh kiện">
+                                        <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                                                       Size="Size.Small"
+                                                       Style="color:var(--hs-text-muted);"
+                                                       OnClick="@(() => OpenPicker(slot))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Xóa">
+                                        <MudIconButton Icon="@Icons.Material.Outlined.DeleteOutline"
+                                                       Size="Size.Small"
+                                                       Style="color:var(--hs-text-muted);"
+                                                       OnClick="@(() => RemoveItem(slot))" />
+                                    </MudTooltip>
+                                </div>
+
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+
+@* ===== STICKY ACTION BAR ===== *@
+<div style="background:var(--hs-white); border-top:1px solid var(--hs-border);
+            padding:16px 0; position:sticky; bottom:0; z-index:50;">
+    <div class="hs-container" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+
+        @* Total *@
+        <div>
+            <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
+                        letter-spacing:0.08em; color:var(--hs-text-muted); margin-bottom:2px;">
+                Tổng chi phí dự tính
+            </div>
+            <div style="font-size:clamp(1.4rem,2.5vw,1.8rem); font-weight:800;
+                        color:@(HasAnyItem ? "var(--hs-red)" : "var(--hs-text-muted)"); letter-spacing:-0.01em;">
+                @TotalCost.ToString("N0") đ
+            </div>
+        </div>
+
+        @* Buttons *@
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="hs-btn"
+                    style="border:2px solid var(--hs-border); color:var(--hs-dark); background:transparent;
+                           display:inline-flex; align-items:center; gap:6px;
+                           @(!HasAnyItem || _isExporting ? "opacity:.4; cursor:not-allowed;" : "")"
+                    @onclick="ExportExcel"
+                    disabled="@(_isExporting || !HasAnyItem)">
+                @if (_isExporting)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Style="width:16px;height:16px;" />
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.SaveAlt" Style="font-size:1rem;" />
+                }
+                LƯU CẤU HÌNH
+            </button>
+
+            <button class="hs-btn hs-btn--primary"
+                    style="display:inline-flex; align-items:center; gap:6px;
+                           @(!HasAnyItem || _isAddingToCart ? "opacity:.4; cursor:not-allowed;" : "")"
+                    @onclick="AddAllToCart"
+                    disabled="@(_isAddingToCart || !HasAnyItem)">
+                @if (_isAddingToCart)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Style="width:16px;height:16px;" />
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Style="font-size:1rem;" />
+                }
+                THÊM VÀO GIỎ HÀNG
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    // ─── Slot model ───────────────────────────────────────────────────────────
+    private class PcSlot
+    {
+        public int Index { get; init; }
+        public string Name { get; init; } = string.Empty;
+        public string CategorySlug { get; init; } = string.Empty;
+        public BuildPcItemDto? SelectedItem { get; set; }
+    }
+
+    // ─── State ───────────────────────────────────────────────────────────────────────────
+    private List<PcSlot> _slots = new()
+    {
+        new() { Index = 1,  Name = "Bộ vi xử lý",        CategorySlug = "cpu" },
+        new() { Index = 2,  Name = "Bo mạch chủ",         CategorySlug = "bo-mach-chu" },
+        new() { Index = 3,  Name = "RAM",                  CategorySlug = "ram" },
+        new() { Index = 4,  Name = "HDD",                  CategorySlug = "hdd" },
+        new() { Index = 5,  Name = "SSD",                  CategorySlug = "ssd" },
+        new() { Index = 6,  Name = "VGA",                  CategorySlug = "vga" },
+        new() { Index = 7,  Name = "Nguồn",                CategorySlug = "nguon" },
+        new() { Index = 8,  Name = "Vỏ Case",              CategorySlug = "vo-case" },
+        new() { Index = 9,  Name = "Fan Case",             CategorySlug = "fan-case" },
+        new() { Index = 10, Name = "Màn hình",             CategorySlug = "man-hinh" },
+        new() { Index = 11, Name = "Chuột",                CategorySlug = "chuot" },
+        new() { Index = 12, Name = "Bàn phím",             CategorySlug = "ban-phim" },
+        new() { Index = 13, Name = "Tản nhiệt khí",        CategorySlug = "tan-nhiet-khi" },
+        new() { Index = 14, Name = "Tản nhiệt nước AIO",   CategorySlug = "tan-nhiet-nuoc-aio" },
+        new() { Index = 15, Name = "Tai nghe",             CategorySlug = "tai-nghe" },
+        new() { Index = 16, Name = "Phần mềm",             CategorySlug = "phan-mem" },
+    };
+
+    private bool _isExporting = false;
+    private bool _isAddingToCart = false;
+
+    private decimal TotalCost =>
+        _slots.Where(s => s.SelectedItem != null)
+              .Sum(s => s.SelectedItem!.UnitPrice * s.SelectedItem.Quantity);
+
+    private bool HasAnyItem => _slots.Any(s => s.SelectedItem != null);
+
+    // ─── Actions ──────────────────────────────────────────────────────────────
+    private async Task OpenPicker(PcSlot slot)
+    {
+        var parameters = new DialogParameters
+        {
+            [nameof(ComponentPickerDialog.SlotName)] = slot.Name,
+            [nameof(ComponentPickerDialog.CategorySlug)] = slot.CategorySlug
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = await DialogService.ShowAsync<ComponentPickerDialog>(
+            $"Chọn {slot.Name}", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is BuildPcItemDto item)
+        {
+            item.SlotIndex = slot.Index;
+            item.SlotName = slot.Name;
+            slot.SelectedItem = item;
+            StateHasChanged();
+        }
+    }
+
+    private void RemoveItem(PcSlot slot)
+    {
+        slot.SelectedItem = null;
+    }
+
+    private void UpdateQuantity(PcSlot slot, int qty)
+    {
+        if (slot.SelectedItem == null) return;
+        slot.SelectedItem.Quantity = Math.Clamp(qty, 1, 10);
+    }
+
+    private void ResetAll()
+    {
+        foreach (var slot in _slots)
+            slot.SelectedItem = null;
+    }
+
+    private async Task ExportExcel()
+    {
+        _isExporting = true;
+        try
+        {
+            var request = new ExportBuildPcRequest
+            {
+                Items = _slots
+                    .Where(s => s.SelectedItem != null)
+                    .Select(s => s.SelectedItem!)
+                    .ToList()
+            };
+            await BuildPcService.ExportBuildPcAsync(request);
+        }
+        catch
+        {
+            Snackbar.Add("Không thể xuất file Excel.", Severity.Error);
+        }
+        finally
+        {
+            _isExporting = false;
+        }
+    }
+
+    private async Task AddAllToCart()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            Navigation.NavigateTo("/login?returnUrl=/build-pc");
+            return;
+        }
+
+        _isAddingToCart = true;
+        int added = 0;
+        int failed = 0;
+
+        foreach (var slot in _slots.Where(s => s.SelectedItem != null))
+        {
+            var item = slot.SelectedItem!;
+            var result = await CartService.AddToCartAsync(item.VariantId, item.Quantity);
+
+            if (result.Success) added++;
+            else failed++;
+        }
+
+        _isAddingToCart = false;
+
+        if (failed == 0)
+        {
+            Snackbar.Add($"Đã thêm {added} linh kiện vào giỏ hàng.", Severity.Success);
+            Navigation.NavigateTo("/cart");
+        }
+        else
+        {
+            Snackbar.Add($"Thêm thành công {added}, thất bại {failed} linh kiện.", Severity.Warning);
+        }
+    }
+}
+
+<style>
+    .bpc-row {
+        display: flex;
+        align-items: stretch;
+    }
+    .bpc-label-col {
+        width: 200px;
+        flex-shrink: 0;
+        padding: 14px 16px;
+        border-right: 1px solid var(--hs-border);
+        background: var(--hs-gray-bg);
+        display: flex;
+        align-items: center;
+    }
+    .bpc-content-col {
+        flex: 1;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+    }
+    .bpc-item-row {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        gap: 8px;
+    }
+    .bpc-col-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--hs-text-muted);
+    }
+    .bpc-col-qty     { width: 90px;  flex-shrink: 0; display: flex; justify-content: center; }
+    .bpc-col-price   { width: 130px; flex-shrink: 0; text-align: right; }
+    .bpc-col-total   { width: 140px; flex-shrink: 0; text-align: right; }
+    .bpc-col-actions { width: 72px;  flex-shrink: 0; display: flex; gap: 2px; justify-content: flex-end; }
+
+    .bpc-add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 16px;
+        border: 1.5px dashed var(--hs-border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--hs-text-muted);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color .15s, color .15s;
+        letter-spacing: 0.03em;
+    }
+    .bpc-add-btn:hover {
+        border-color: var(--hs-red);
+        color: var(--hs-red);
+    }
+
+    @@media (max-width: 600px) {
+        .bpc-label-col { width: 110px; }
+        .bpc-col-price, .bpc-col-total { display: none; }
+        .bpc-col-qty { width: 72px; }
+    }
+</style>

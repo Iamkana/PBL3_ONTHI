@@ -1,0 +1,392 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@using Client.Services.Storefront
+@using Client.Shared.Components.Storefront
+@using PBL3.Shared.DTOs.Storefront
+@inject IAuthClientService AuthService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IDialogService DialogService
+@inject IStorefrontClientService StorefrontService
+
+<MudLayout Style="min-height: 100vh; display: flex; flex-direction: column;">
+    @* ===== TOP APP BAR ===== *@
+    <MudAppBar Elevation="2" Dense="false" Fixed="true"
+               Style="background-color: #111111; color: white;">
+
+        @* -- Logo -- *@
+        <MudImage Src="images/logo.png" Alt="HushStore"
+                  Width="120" Height="40"
+                  ObjectFit="ObjectFit.Contain"
+                  Class="mr-4" Style="cursor: pointer;"
+                  @onclick='() => Navigation.NavigateTo("/")' />
+
+        @* -- PC Dựng Sẵn -- *@
+        <MudButton Variant="Variant.Text" Class="hs-nav-link"
+                   OnClick='@(() => Navigation.NavigateTo("/category/pc-build-san"))'>
+            PC Dựng Sẵn
+        </MudButton>
+
+        @* -- Linh Kiện PC dropdown -- *@
+        <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Text" Class="hs-nav-link"
+                           EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                    Linh Kiện PC
+                </MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                <div style="min-width: 200px; padding: 8px 0; background: #1C1C1C;">
+                    <MudMenuItem OnClick='@(() => Navigation.NavigateTo("/category/linh-kien-may-tinh"))'
+                                 Style="color: #ccc; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: default; padding: 6px 16px;">
+                        XEM TẤT CẢ LINH KIỆN
+                    </MudMenuItem>
+                    <MudDivider Style="border-color: #333;" />
+                    @foreach (var cat in _menuCategories.Where(c => c.Level == 1).OrderBy(c => c.Name))
+                    {
+                        <MudMenuItem OnClick="@(() => Navigation.NavigateTo($"/category/{cat.Slug}"))"
+                                     Style="color: #eee;">
+                            @cat.Name
+                        </MudMenuItem>
+                    }
+                </div>
+            </ChildContent>
+        </MudMenu>
+
+        @* -- Hỗ Trợ -- *@
+        <MudButton Variant="Variant.Text" Class="hs-nav-link"
+                   OnClick="FooterComingSoon">
+            Hỗ Trợ
+        </MudButton>
+
+        @* -- Search Bar -- *@
+        <MudPaper Elevation="0" Class="d-flex align-center rounded-lg px-3 flex-grow-1"
+                  Style="background-color: white; max-width: 600px;">
+            <div class="flex-grow-1" style="position:relative;" @onfocusout="@(() => _showSuggestions = false)">
+                <MudTextField T="string"
+                              Value="@_searchKeyword"
+                              ValueChanged="OnSearchInputChanged"
+                              Placeholder="Nhập từ khóa tìm kiếm..."
+                              Variant="Variant.Text"
+                              Class="flex-grow-1"
+                              Style="font-size: 0.9rem;"
+                              Margin="Margin.Dense"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              AdornmentColor="Color.Error"
+                              OnAdornmentClick="PerformSearch"
+                              OnKeyDown="OnSearchKeyDown"
+                              Immediate="true" />
+
+                @if (_showSuggestions && _suggestions?.Count > 0)
+                {
+                    <div class="mud-elevation-8"
+                         style="position:absolute;top:100%;left:-12px;right:-12px;z-index:2000;
+                                border-radius:0 0 4px 4px;overflow:hidden;
+                                background-color:var(--mud-palette-surface);"
+                         @onmousedown:preventDefault>
+                        <MudList T="ProductCardResponse" Dense="true" Class="pa-0">
+                            @foreach (var product in _suggestions)
+                            {
+                                <MudListItem T="ProductCardResponse" OnClick="@(() => OnProductSelected(product))">
+                                    <div class="d-flex align-center gap-2 py-1">
+                                        @if (!string.IsNullOrEmpty(product.ThumbnailUrl))
+                                        {
+                                            <img src="@product.ThumbnailUrl"
+                                                 style="width:36px;height:36px;object-fit:contain;flex-shrink:0;" alt="" />
+                                        }
+                                        else
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.Inventory2"
+                                                     Size="Size.Small" Style="width:36px;opacity:0.4;" />
+                                        }
+                                        <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+                                            <MudText Typo="Typo.body2"
+                                                     Style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                                @product.Name
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @product.ManufacturerName
+                                            </MudText>
+                                        </div>
+                                        <MudText Typo="Typo.body2" Color="Color.Error"
+                                                 Style="white-space:nowrap;font-weight:600;margin-left:8px;">
+                                            @product.CurrentPrice.ToString("N0")₫
+                                        </MudText>
+                                    </div>
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </div>
+                }
+            </div>
+        </MudPaper>
+        <MudSpacer />
+
+        @* -- Cart Icon -- *@
+        <MudTooltip Text="Giỏ hàng">
+            <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart"
+                           Color="Color.Inherit"
+                           Href="/cart"
+                           Size="Size.Medium" />
+        </MudTooltip>
+
+        @* -- Build PC Button -- *@
+        <MudButton Variant="Variant.Text"
+                   StartIcon="@Icons.Material.Filled.Build"
+                   Style="color: white; white-space: nowrap;"
+                   Href="/build-pc">
+            Xây dựng PC
+        </MudButton>
+
+        @* -- User Menu -- *@
+        <AuthorizeView>
+            <Authorized>
+                <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                    <ActivatorContent>
+                        <MudAvatar Size="Size.Small" Color="Color.Secondary" Class="cursor-pointer ml-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                        </MudAvatar>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Person">@context.User.Identity?.Name</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.ManageAccounts" OnClick="OpenProfileDialog">Xem hồ sơ</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.ReceiptLong" Href="/my/orders">Đơn hàng của tôi</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Build" Href="/my/service-tickets">Phiếu sửa chữa của tôi</MudMenuItem>
+                        <MudDivider />
+                        <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Đăng xuất</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </Authorized>
+            <NotAuthorized>
+                <MudButton Variant="Variant.Text"
+                           Style="color: white;"
+                           StartIcon="@Icons.Material.Filled.Login"
+                           Href="/login">
+                    Đăng nhập
+                </MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudAppBar>
+
+    @* ===== MAIN CONTENT (no sidebar) ===== *@
+    <MudMainContent Style="flex: 1 0 auto; padding-top: 68px !important; background-color: #FFFFFF;">
+        @Body
+    </MudMainContent>
+
+    @* ===== FOOTER ===== *@
+    <footer style="background: #111111; color: #aaaaaa; font-family: var(--hs-font, 'Inter', sans-serif);">
+        <div class="hs-container" style="padding-top: 56px; padding-bottom: 40px;">
+            <div class="hs-footer-grid">
+
+                @* Col 1: Brand *@
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px;">
+                        HUSH<span style="color: #E11D2A;">STORE</span>
+                    </div>
+                    <p style="font-size: 0.8rem; line-height: 1.7; margin-bottom: 16px; color: #888;">
+                        CÔNG TY TNHH HUSH STORE
+                    </p>
+                    <div style="font-size: 0.8rem; line-height: 2; color: #888;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Style="font-size:1rem;color:#888;flex-shrink:0;" />
+                            <span>123 Nguyễn Lương Bằng, Đà Nẵng</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Phone" Style="font-size:1rem;color:#888;flex-shrink:0;" />
+                            <span>0236.3636367</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Style="font-size:1rem;color:#888;flex-shrink:0;" />
+                            <span>hotro@hushstore.vn</span>
+                        </div>
+                    </div>
+                </div>
+
+                @* Col 2: Products *@
+                <div>
+                    <h4 style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: white; margin-bottom: 20px;">
+                        SẢN PHẨM
+                    </h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                        <li><span class="hs-footer-link" @onclick='() => Navigation.NavigateTo("/category/pc-build-san")'>PC Dựng Sẵn</span></li>
+                        <li><span class="hs-footer-link" @onclick='() => Navigation.NavigateTo("/category/linh-kien-may-tinh")'>Linh Kiện PC</span></li>
+                        <li><span class="hs-footer-link" @onclick='() => Navigation.NavigateTo("/build-pc")'>Xây Dựng Cấu Hình</span></li>
+                    </ul>
+                </div>
+
+                @* Col 3: Support *@
+                <div>
+                    <h4 style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: white; margin-bottom: 20px;">
+                        HỖ TRỢ
+                    </h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                        <li><span class="hs-footer-link" @onclick="FooterComingSoon">Chính sách bảo mật</span></li>
+                        <li><span class="hs-footer-link" @onclick="FooterComingSoon">Chính sách bảo hành</span></li>
+                        <li><span class="hs-footer-link" @onclick="FooterComingSoon">Chính sách thanh toán</span></li>
+                        <li><span class="hs-footer-link" @onclick="FooterComingSoon">Chính sách vận chuyển</span></li>
+                    </ul>
+                </div>
+
+                @* Col 4: Connect *@
+                <div>
+                    <h4 style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: white; margin-bottom: 20px;">
+                        KẾT NỐI
+                    </h4>
+                    <p style="font-size: 0.8rem; color: #888; line-height: 1.6;">
+                        Theo dõi HushStore để cập nhật<br />sản phẩm & ưu đãi mới nhất.
+                    </p>
+                    <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <MudIconButton Icon="@Icons.Custom.Brands.Facebook"
+                                       Title="Facebook"
+                                       Style="color: #888; background: #1C1C1C; border-radius: 4px;"
+                                       Size="Size.Medium" />
+                        <MudIconButton Icon="@Icons.Custom.Brands.Twitter"
+                                       Title="Twitter"
+                                       Style="color: #888; background: #1C1C1C; border-radius: 4px;"
+                                       Size="Size.Medium" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Bottom bar *@
+        <div style="border-top: 1px solid #2A2A2A;">
+            <div class="hs-container" style="padding-top: 20px; padding-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 0.75rem; color: #555;">
+                    © @DateTime.Now.Year CÔNG TY TNHH HUSH STORE. Bảo lưu mọi quyền.
+                </span>
+                <span style="font-size: 0.75rem; color: #555;">
+                    Hàng chính hãng · Bảo hành tận nơi · Giao hàng toàn quốc
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <ComparisonTray />
+</MudLayout>
+
+@code {
+    private string _searchKeyword = string.Empty;
+    private List<CategoryMenuResponse> _menuCategories = new();
+    private List<ProductCardResponse>? _suggestions;
+    private bool _showSuggestions;
+    private CancellationTokenSource? _suggestCts;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _searchKeyword = string.Empty;
+        _showSuggestions = false;
+        _suggestions = null;
+        _suggestCts?.Cancel();
+        _suggestCts?.Dispose();
+        _suggestCts = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        _suggestCts?.Cancel();
+        _suggestCts?.Dispose();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                if (user.IsInRole("Admin"))
+                {
+                    Navigation.NavigateTo("/admin/reports");
+                    return;
+                }
+                else if (user.IsInRole("Employee"))
+                {
+                    Navigation.NavigateTo("/pos");
+                    return;
+                }
+            }
+
+            var catResult = await StorefrontService.GetActiveCategoriesAsync();
+            if (catResult.Success && catResult.Data != null)
+                _menuCategories = catResult.Data;
+        }
+        catch
+        {
+            // Silently handle — don't break the layout
+        }
+    }
+
+    private async Task OnSearchInputChanged(string value)
+    {
+        _searchKeyword = value;
+        _suggestCts?.Cancel();
+        _suggestCts?.Dispose();
+        _suggestCts = null;
+        if (string.IsNullOrWhiteSpace(value) || value.Length < 2)
+        {
+            _suggestions = null;
+            _showSuggestions = false;
+            return;
+        }
+        _suggestCts = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(400, _suggestCts.Token);
+            var result = await StorefrontService.SearchProductsAsync(value, null, null, null, 1, 8);
+            if (result.Success && result.Data != null)
+            {
+                _suggestions = result.Data.Items.ToList();
+                _showSuggestions = _suggestions.Count > 0;
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private void OnProductSelected(ProductCardResponse? product)
+    {
+        _showSuggestions = false;
+        if (product != null)
+            Navigation.NavigateTo($"/product/{product.Slug}");
+    }
+
+    private void OnSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            PerformSearch();
+        else if (args.Key == "Escape")
+            _showSuggestions = false;
+    }
+
+    private void PerformSearch()
+    {
+        _showSuggestions = false;
+        if (!string.IsNullOrWhiteSpace(_searchKeyword))
+            Navigation.NavigateTo($"/search?q={Uri.EscapeDataString(_searchKeyword.Trim())}");
+    }
+
+    private void FooterComingSoon() =>
+        Snackbar.Add("Tính năng đang phát triển", Severity.Info);
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+    }
+
+    private async Task OpenProfileDialog()
+    {
+        await DialogService.ShowAsync<UserProfileDialog>(string.Empty,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true });
+    }
+}

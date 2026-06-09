@@ -1,0 +1,278 @@
+@using PBL3.Shared.DTOs.Customers
+@using PBL3.Shared.DTOs.Common
+@using MudBlazor
+@using FluentValidation
+@inject ICustomerClientService CustomerService
+@inject IImageClientService ImageService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="@_model" OnValidSubmit="HandleSubmit">
+            <FluentValidationValidator Validator="@_formValidator" />
+            
+            <MudGrid>
+                @if (IsEditMode)
+                {
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Email" Label="Email" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_model.Email" For="@(() => _model.Email)" Label="Email" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                }
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.FullName" For="@(() => _model.FullName)" Label="Họ và tên" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+
+                @if (IsEditMode)
+                {
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="PhoneNumber" Label="Số điện thoại" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_model.PhoneNumber" For="@(() => _model.PhoneNumber)" Label="Số điện thoại" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                }
+
+                <MudItem xs="6">
+                    <MudSelect @bind-Value="_model.Gender" Label="Giới tính" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudSelectItem Value="@((byte)0)">Nam</MudSelectItem>
+                        <MudSelectItem Value="@((byte)1)">Nữ</MudSelectItem>
+                        <MudSelectItem Value="@((byte)2)">Khác</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudDatePicker @bind-Date="_model.DateOfBirth" Label="Ngày sinh" Variant="Variant.Outlined" Margin="Margin.Dense" DisableToolbar="true" MaxDate="DateTime.Today" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Address" For="@(() => _model.Address)" Label="Địa chỉ" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.City" For="@(() => _model.City)" Label="Thành phố" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+
+                @if (IsEditMode)
+                {
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.body2" Class="mb-1" Style="font-weight: 500;">Avatar</MudText>
+                        <div class="d-flex align-center gap-3">
+                            @if (!string.IsNullOrWhiteSpace(_model.AvatarUrl))
+                            {
+                                <MudAvatar Size="Size.Large" Style="width:56px; height:56px;">
+                                    <MudImage Src="@_model.AvatarUrl" />
+                                </MudAvatar>
+                                <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small"
+                                           OnClick="() => _model.AvatarUrl = null" StartIcon="@Icons.Material.Filled.Delete">
+                                    Xóa
+                                </MudButton>
+                            }
+                        </div>
+                        <InputFile id="customerAvatarInput" OnChange="HandleAvatarUpload" accept="image/*" style="display:none" disabled="@_isUploadingAvatar" />
+                        <label for="customerAvatarInput" style="cursor: @(_isUploadingAvatar ? "not-allowed" : "pointer"); display: block; margin-top: 8px;">
+                            <MudPaper Outlined="true"
+                                      Class="d-flex align-center justify-center pa-2 rounded-lg gap-2"
+                                      Style="border-style: dashed; min-height: 44px; background: var(--mud-palette-background-grey);">
+                                @if (_isUploadingAvatar)
+                                {
+                                    <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Đang upload...</MudText>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Small" Color="Color.Default" />
+                                    <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                                        @(string.IsNullOrWhiteSpace(_model.AvatarUrl) ? "Chọn ảnh đại diện (tùy chọn)" : "Thay ảnh đại diện")
+                                    </MudText>
+                                }
+                            </MudPaper>
+                        </label>
+                    </MudItem>
+                }
+            </MudGrid>
+
+            <div class="d-flex justify-end mt-4">
+                <MudButton OnClick="Cancel" Class="mr-2">Hủy</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSaving">
+                    @if (_isSaving)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    }
+                    else
+                    {
+                        @(IsEditMode ? "Cập nhật" : "Tạo mới")
+                    }
+                </MudButton>
+            </div>
+        </EditForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public Guid? InitialId { get; set; }
+    [Parameter] public CustomerDto? InitialData { get; set; }
+    
+    // Khi Edit, EditForm xử lý Validation dựa trên loại DTO.
+    // Vì DTO tạo mới và DTO Cập nhật khác nhau, ta sử dụng 1 model chung (hoặc kiểu dynamic/obj base) 
+    // Tuy nhiên đơn giản nhất là map vào class local và xử lý call.
+    
+    // We will use a local unified model and map manually to Request objects.
+    public class DialogFormModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public byte Gender { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? AvatarUrl { get; set; }
+        public string? Address { get; set; }
+        public string? City { get; set; }
+    }
+
+    private DialogFormModel _model = new();
+    private AbstractValidator<DialogFormModel> _formValidator = null!;
+
+    // Để giữ info hiển thị ReadOnly khi Edit
+    private string Email { get; set; } = string.Empty;
+    private string PhoneNumber { get; set; } = string.Empty;
+
+    private bool IsEditMode => InitialId.HasValue && InitialId.Value != Guid.Empty;
+    private bool _isSaving = false;
+    private bool _isUploadingAvatar = false;
+
+    private sealed class DialogFormModelValidator : AbstractValidator<DialogFormModel>
+    {
+        public DialogFormModelValidator(bool isEditMode)
+        {
+            RuleFor(x => x.FullName)
+                .NotEmpty().WithMessage("Họ tên không được để trống.")
+                .MaximumLength(100).WithMessage("Họ tên không được vượt quá 100 ký tự.");
+
+            RuleFor(x => x.Address)
+                .MaximumLength(255).WithMessage("Địa chỉ không được vượt quá 255 ký tự.");
+
+            RuleFor(x => x.City)
+                .MaximumLength(255).WithMessage("Thành phố không được vượt quá 255 ký tự.");
+
+            RuleFor(x => x.DateOfBirth)
+                .LessThan(DateTime.Today).WithMessage("Ngày sinh phải nhỏ hơn ngày hiện tại.")
+                .When(x => x.DateOfBirth.HasValue);
+
+            if (!isEditMode)
+            {
+                RuleFor(x => x.Email)
+                    .NotEmpty().WithMessage("Email không được để trống.")
+                    .EmailAddress().WithMessage("Email không đúng định dạng.")
+                    .MaximumLength(256).WithMessage("Email không được vượt quá 256 ký tự.");
+
+                RuleFor(x => x.PhoneNumber)
+                    .NotEmpty().WithMessage("Số điện thoại không được để trống.")
+                    .Matches(@"^0[3-9][0-9]{8}$").WithMessage("Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam gồm 10 chữ số (bắt đầu bằng 03x, 05x, 07x, 08x, 09x).");
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        _formValidator = new DialogFormModelValidator(IsEditMode);
+        if (IsEditMode && InitialData != null)
+            LoadData(InitialData);
+    }
+
+    // Method to pass existing data into dialog
+    public void LoadData(CustomerDto customer)
+    {
+        _model.FullName = customer.FullName;
+        _model.Gender = customer.Gender;
+        _model.DateOfBirth = customer.DateOfBirth;
+        _model.AvatarUrl = customer.AvatarUrl;
+        _model.Address = customer.Address;
+        _model.City = customer.City;
+
+        Email = customer.Email;
+        PhoneNumber = customer.PhoneNumber;
+    }
+
+    private async Task HandleAvatarUpload(InputFileChangeEventArgs e)
+    {
+        _isUploadingAvatar = true;
+        StateHasChanged();
+
+        var url = await ImageService.UploadAsync(e.File, "avatars");
+        if (url != null)
+            _model.AvatarUrl = url;
+        else
+            Snackbar.Add("Upload ảnh đại diện thất bại. Vui lòng thử lại.", MudBlazor.Severity.Error);
+
+        _isUploadingAvatar = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleSubmit()
+    {
+        _isSaving = true;
+        try
+        {
+            ApiResult<CustomerDto>? result = null;
+
+            if (IsEditMode)
+            {
+                var request = new UpdateCustomerRequest
+                {
+                    FullName = _model.FullName,
+                    Gender = _model.Gender,
+                    DateOfBirth = _model.DateOfBirth,
+                    AvatarUrl = _model.AvatarUrl,
+                    Address = _model.Address,
+                    City = _model.City
+                };
+                result = await CustomerService.UpdateAsync(InitialId!.Value, request);
+            }
+            else
+            {
+                var request = new CreateCustomerRequest
+                {
+                    Email = _model.Email,
+                    FullName = _model.FullName,
+                    PhoneNumber = _model.PhoneNumber,
+                    Gender = _model.Gender,
+                    DateOfBirth = _model.DateOfBirth,
+                    Address = _model.Address,
+                    City = _model.City
+                };
+                result = await CustomerService.CreateAsync(request);
+            }
+
+            if (result != null && result.Success)
+            {
+                Snackbar.Add(IsEditMode ? "Cập nhật thành công!" : "Tạo khách hàng thành công!", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(result?.Message ?? "Có lỗi xảy ra.", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Lỗi thao tác: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

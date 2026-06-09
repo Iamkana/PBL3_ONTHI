@@ -1,0 +1,426 @@
+@page "/my/orders/{Id:int}"
+@using PBL3.Shared.DTOs.Sale
+@using PBL3.Shared.DTOs.Common
+@using Client.Pages.Orders.Components
+@using Client.Services.Orders
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Customer")]
+@inject IOrderClientService OrderService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+
+<PageTitle>Chi tiết đơn hàng - HushStore</PageTitle>
+
+@* ===== LOADING ===== *@
+@if (_isLoading)
+{
+    <div style="background:var(--hs-white); padding:80px 0; text-align:center;">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    </div>
+}
+else if (_order != null)
+{
+    @* ===== HEADER ===== *@
+    <div style="background:var(--hs-white); border-bottom:1px solid var(--hs-border); padding:20px 0;">
+        <div class="hs-container">
+            <a href="/my/orders"
+               style="display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600;
+                      color:var(--hs-text-muted); text-decoration:none; margin-bottom:16px;">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Style="font-size:1rem;" />
+                Quay lại danh sách đơn hàng
+            </a>
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+                                text-transform:uppercase; color:var(--hs-text-muted); margin-bottom:4px;">
+                        Đơn hàng
+                    </div>
+                    <h1 style="font-size:clamp(1.3rem,2.5vw,1.8rem); font-weight:800; color:var(--hs-dark);
+                               letter-spacing:-0.01em; margin:0 0 4px; font-family:monospace;">
+                        @_order.OrderCode
+                    </h1>
+                    <span style="font-size:0.8rem; color:var(--hs-text-muted);">
+                        @_order.OrderDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                    </span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    @if (_order.Status == 0)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.Cancel"
+                                   Style="font-weight:700; font-size:0.78rem; letter-spacing:0.04em; border-radius:8px;"
+                                   OnClick="ConfirmCancelOrder">
+                            HỦY ĐƠN HÀNG
+                        </MudButton>
+                    }
+                    @if (_order.Status == 2)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.CheckCircle"
+                                   Style="font-weight:700; font-size:0.78rem; letter-spacing:0.04em; border-radius:8px;"
+                                   OnClick="ConfirmReceived"
+                                   Disabled="_isConfirming">
+                            @if (_isConfirming)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
+                            }
+                            ĐÃ NHẬN HÀNG
+                        </MudButton>
+                    }
+                    <MudChip T="string" Size="Size.Medium"
+                             Color="@GetStatusColor(_order.Status)" Variant="Variant.Filled"
+                             Style="font-weight:700; font-size:0.8rem;">
+                        @GetStatusText(_order.Status)
+                    </MudChip>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ===== STATUS TIMELINE ===== *@
+    <div style="background:var(--hs-gray-bg); border-bottom:1px solid var(--hs-border); padding:24px 0;">
+        <div class="hs-container">
+            <OrderStatusTimeline Status="@_order.Status" />
+        </div>
+    </div>
+
+    @* ===== MAIN CONTENT ===== *@
+    <div style="background:var(--hs-gray-bg); padding:32px 0 72px;">
+        <div class="hs-container">
+            <MudGrid Spacing="3">
+
+                @* Order info + Shipping *@
+                <MudItem xs="12" md="8">
+                    <div style="border:1px solid var(--hs-border); border-radius:12px; background:var(--hs-white); padding:24px; height:100%;">
+                        <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+                                    text-transform:uppercase; color:var(--hs-text-muted); margin-bottom:16px;">
+                            Thông tin đơn hàng
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                            <div>
+                                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:4px;">Mã đơn</div>
+                                <div style="font-family:monospace; font-weight:700; color:var(--hs-dark);">@_order.OrderCode</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:4px;">Ngày đặt</div>
+                                <div style="font-size:0.875rem; color:var(--hs-dark);">@_order.OrderDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:4px;">Hình thức TT</div>
+                                <div style="font-size:0.875rem; color:var(--hs-dark);">@GetPaymentMethodText(_order.PaymentMethod)</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:4px;">Trạng thái TT</div>
+                                <div style="font-size:0.875rem; font-weight:600; color:var(--hs-dark);">@GetPaymentStatusText(_order.PaymentStatus)</div>
+                            </div>
+                        </div>
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <div style="border:1px solid var(--hs-border); border-radius:12px; background:var(--hs-white); padding:24px; height:100%;">
+                        <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+                                    text-transform:uppercase; color:var(--hs-text-muted); margin-bottom:16px;">
+                            Thông tin giao hàng
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <div>
+                                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:3px;">Người nhận</div>
+                                <div style="font-size:0.875rem; font-weight:700; color:var(--hs-dark);">@_order.ShipName</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:3px;">Điện thoại</div>
+                                <div style="font-size:0.875rem; color:var(--hs-dark);">@_order.ShipPhone</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:3px;">Địa chỉ</div>
+                                <div style="font-size:0.875rem; color:var(--hs-dark);">@_order.ShipAddress, @_order.ShipCity</div>
+                            </div>
+                        </div>
+                    </div>
+                </MudItem>
+
+                @* Products *@
+                <MudItem xs="12">
+                    <div style="border:1px solid var(--hs-border); border-radius:12px; background:var(--hs-white); overflow:hidden;">
+                        <div style="padding:20px 24px; border-bottom:1px solid var(--hs-border);">
+                            <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+                                        text-transform:uppercase; color:var(--hs-text-muted);">
+                                Danh sách sản phẩm
+                            </div>
+                        </div>
+                        <MudTable Items="@_order.Items" Hover="true" Dense="false" Elevation="0">
+                            <HeaderContent>
+                                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA; width:76px;">Ảnh</MudTh>
+                                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Sản phẩm</MudTh>
+                                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA; text-align:right;">SL</MudTh>
+                                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA; text-align:right;">Đơn giá</MudTh>
+                                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA; text-align:right;">Thành tiền</MudTh>
+                                <MudTh Style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--hs-text-muted); background:#FAFAFA;">Serial</MudTh>
+                            </HeaderContent>
+                            <RowTemplate Context="item">
+                                <MudTd DataLabel="Ảnh">
+                                    <div style="width:60px; height:60px; border-radius:8px; border:1px solid var(--hs-border);
+                                                background:#FAFAFA; padding:4px; display:flex; align-items:center; justify-content:center;">
+                                        @if (!string.IsNullOrEmpty(item.MainImageUrl))
+                                        {
+                                            <img src="@item.MainImageUrl" alt="@item.VariantName"
+                                                 style="max-width:100%; max-height:100%; object-fit:contain;" />
+                                        }
+                                        else
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Outlined.Image" Style="color:#BDBDBD;" />
+                                        }
+                                    </div>
+                                </MudTd>
+                                <MudTd DataLabel="Sản phẩm">
+                                    <div style="font-size:0.875rem; font-weight:700; color:var(--hs-dark); margin-bottom:2px;">@item.VariantName</div>
+                                    <div style="font-size:0.75rem; color:var(--hs-text-muted); font-family:monospace;">SKU: @item.SKU</div>
+                                </MudTd>
+                                <MudTd DataLabel="SL" Style="text-align:right;">
+                                    <span style="font-weight:700; color:var(--hs-dark);">@item.Quantity</span>
+                                </MudTd>
+                                <MudTd DataLabel="Đơn giá" Style="text-align:right;">
+                                    <span style="font-size:0.875rem; color:var(--hs-text);">@item.UnitPrice.ToString("N0") đ</span>
+                                </MudTd>
+                                <MudTd DataLabel="Thành tiền" Style="text-align:right;">
+                                    <span style="font-size:0.875rem; font-weight:800; color:var(--hs-red);">@item.TotalLine.ToString("N0") đ</span>
+                                </MudTd>
+                                <MudTd DataLabel="Serial">
+                                    @if (item.Serials != null && item.Serials.Any())
+                                    {
+                                        <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                                            @foreach (var serial in item.Serials)
+                                            {
+                                                <span style="font-family:monospace; font-size:0.72rem; font-weight:600;
+                                                             border:1px solid var(--hs-border); border-radius:6px; padding:2px 8px;
+                                                             color:var(--hs-dark);">@serial</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span style="font-size:0.75rem; color:var(--hs-text-muted);">Chưa gán</span>
+                                    }
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </div>
+                </MudItem>
+
+                @* Notes (conditional) *@
+                @if (!string.IsNullOrWhiteSpace(_order.Note) || !string.IsNullOrWhiteSpace(_order.CancelReason))
+                {
+                    <MudItem xs="12" md="8">
+                        <div style="border:1px solid var(--hs-border); border-radius:12px; background:var(--hs-white); padding:24px;">
+                            <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+                                        text-transform:uppercase; color:var(--hs-text-muted); margin-bottom:16px;">
+                                Ghi chú
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(_order.Note))
+                            {
+                                <div style="margin-bottom:14px;">
+                                    <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:4px;">Ghi chú đơn hàng</div>
+                                    <div style="font-size:0.875rem; color:var(--hs-dark);">@_order.Note</div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(_order.CancelReason))
+                            {
+                                <div>
+                                    <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-text-muted); margin-bottom:4px;">Lý do hủy</div>
+                                    <div style="font-size:0.875rem; color:#DC2626; font-weight:600;">@_order.CancelReason</div>
+                                    @if (_order.PaymentStatus == 1)
+                                    {
+                                        <div style="font-size:0.8rem; color:#D97706; margin-top:6px;">
+                                            Liên hệ với cửa hàng để hoàn tiền.
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </MudItem>
+                }
+
+                @* Price Summary *@
+                <MudItem xs="12" md="@(string.IsNullOrWhiteSpace(_order.Note) && string.IsNullOrWhiteSpace(_order.CancelReason) ? 12 : 4)">
+                    <div style="border:1px solid var(--hs-border); border-top:3px solid var(--hs-red);
+                                border-radius:12px; background:var(--hs-white); padding:24px;">
+                        <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+                                    text-transform:uppercase; color:var(--hs-text-muted); margin-bottom:16px;">
+                            Tổng thanh toán
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <span style="font-size:0.875rem; color:var(--hs-text-muted);">Tạm tính</span>
+                            <span style="font-size:0.875rem; color:var(--hs-dark);">@_order.SubTotal.ToString("N0") đ</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <span style="font-size:0.875rem; color:var(--hs-text-muted);">Phí giao hàng</span>
+                            <span style="font-size:0.875rem; color:var(--hs-dark);">@_order.ShippingFee.ToString("N0") đ</span>
+                        </div>
+                        @if (_order.DiscountAmount > 0)
+                        {
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                <span style="font-size:0.875rem; color:var(--hs-text-muted);">Giảm giá</span>
+                                <span style="font-size:0.875rem; font-weight:700; color:var(--hs-red);">-@_order.DiscountAmount.ToString("N0") đ</span>
+                            </div>
+                        }
+                        <div style="height:1px; background:var(--hs-border); margin:12px 0;"></div>
+                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <span style="font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--hs-dark);">Tổng cộng</span>
+                            <span style="font-size:1.4rem; font-weight:800; color:var(--hs-red); letter-spacing:-0.01em;">@_order.TotalAmount.ToString("N0") đ</span>
+                        </div>
+
+                        @if (_order.AppliedVouchers != null && _order.AppliedVouchers.Any())
+                        {
+                            <div style="height:1px; background:var(--hs-border); margin:16px 0;"></div>
+                            <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+                                        text-transform:uppercase; color:var(--hs-text-muted); margin-bottom:10px;">
+                                Voucher đã dùng
+                            </div>
+                            @foreach (var voucher in _order.AppliedVouchers)
+                            {
+                                <div style="display:flex; justify-content:space-between; align-items:center;
+                                            background:var(--hs-gray-bg); border-radius:8px; padding:10px 12px; margin-bottom:8px;">
+                                    <div>
+                                        <div style="font-family:monospace; font-weight:700; font-size:0.82rem; color:var(--hs-dark);">@voucher.VoucherCode</div>
+                                        <div style="font-size:0.72rem; color:var(--hs-text-muted);">@voucher.VoucherName</div>
+                                    </div>
+                                    <span style="font-size:0.875rem; font-weight:700; color:var(--hs-red);">-@voucher.DiscountApplied.ToString("N0") đ</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </MudItem>
+
+            </MudGrid>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private OrderDetailDto? _order;
+    private bool _isLoading = true;
+    private bool _isConfirming = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrder();
+    }
+
+    private async Task LoadOrder()
+    {
+        _isLoading = true;
+        try
+        {
+            var result = await OrderService.GetByIdAsync(Id);
+            if (result.Success && result.Data != null)
+            {
+                _order = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Không thể tải chi tiết đơn hàng.", Severity.Error);
+                GoBack();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Lỗi thao tác: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/my/orders");
+
+    private async Task ConfirmCancelOrder()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<CancelOrderDialog>("Hủy Đơn Hàng", new DialogParameters(), options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled && result.Data is string cancelReason)
+        {
+            var apiResult = await OrderService.CancelMyOrderAsync(Id, cancelReason);
+            if (apiResult.Success)
+            {
+                Snackbar.Add("Đã hủy đơn hàng thành công.", Severity.Success);
+                await LoadOrder();
+            }
+            else
+            {
+                Snackbar.Add(apiResult.Message ?? "Lỗi khi hủy đơn hàng.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task ConfirmReceived()
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Xác nhận đã nhận hàng",
+            $"Bạn xác nhận đã nhận đơn hàng {_order?.OrderCode}? Sau khi xác nhận, đơn sẽ chuyển sang trạng thái Hoàn thành.",
+            yesText: "Đã nhận hàng",
+            cancelText: "Đóng");
+
+        if (confirmed != true) return;
+
+        _isConfirming = true;
+        StateHasChanged();
+        var result = await OrderService.ConfirmReceivedAsync(Id);
+        _isConfirming = false;
+
+        if (result.Success)
+        {
+            Snackbar.Add("Cảm ơn bạn đã xác nhận nhận hàng.", Severity.Success);
+            await LoadOrder();
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Lỗi khi xác nhận nhận hàng.", Severity.Error);
+        }
+    }
+
+    private static string GetStatusText(byte status) => status switch
+    {
+        0 => "Chờ duyệt",
+        1 => "Chờ xuất kho",
+        2 => "Đang giao",
+        3 => "Hoàn thành",
+        4 => "Đã hủy",
+        5 => "Hoàn trả",
+        _ => "Không xác định"
+    };
+
+    private static Color GetStatusColor(byte status) => status switch
+    {
+        0 => Color.Warning,
+        1 => Color.Info,
+        2 => Color.Primary,
+        3 => Color.Success,
+        4 => Color.Error,
+        5 => Color.Dark,
+        _ => Color.Default
+    };
+
+    private static string GetPaymentMethodText(byte method) => method switch
+    {
+        0 => "Thanh toán khi nhận hàng (COD)",
+        1 => "Chuyển khoản ngân hàng",
+        2 => "VNPay",
+        _ => "Không xác định"
+    };
+
+    private static string GetPaymentStatusText(byte status) => status switch
+    {
+        0 => "Chưa thanh toán",
+        1 => "Đã thanh toán",
+        2 => "Đã hoàn tiền",
+        _ => "Không xác định"
+    };
+}

@@ -1,0 +1,4 @@
+C:\Users\Admin\AppData\Local\Temp\blazor-out\wwwroot\index.html
+C:\Users\Admin\AppData\Local\Temp\blazor-out\Client.runtimeconfig.json
+C:\Users\Admin\AppData\Local\Temp\blazor-out\dotnet.js
+C:\Users\Admin\AppData\Local\Temp\blazor-out\web.config
